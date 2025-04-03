@@ -12,11 +12,51 @@ router.get("/", async (req, res) => {
         name: true,
       },
     });
-    console.log(users[0]);
-    res.json({ message: "Here is the first user:", users: users[0].email });
+    res.json({ message: "Here are the users:", users: users });
+    // TODO: should cache these results. Same for posts and comments.
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ error: "Failed to fetch users" });
+  }
+});
+router.delete("/:id", async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+
+    if (isNaN(userId)) {
+      return res.status(400).json({
+        message: "Invalid user ID",
+      });
+    }
+
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    res.status(204).send();
+  } catch (error) {
+    console.error("Error deleting user:", error);
+
+    if (error.code === "P2025") {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    res.status(500).json({
+      message: "Failed to delete user",
+      error: error.message,
+    });
   }
 });
 
