@@ -53,7 +53,14 @@ router.post("/register", async (req, res) => {
     // Store refresh token
     await storeRefreshToken(newUser.id, refreshToken);
 
-    // Set refresh token in HTTP-only cookie
+    // Set tokens in HTTP-only cookies
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // Use secure cookies in production
@@ -61,12 +68,11 @@ router.post("/register", async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    // Return success with access token
+    // Return success with user data but no tokens in response body
     res.status(201).json({
       success: true,
       message: "User registered successfully",
       user: newUser,
-      accessToken,
     });
   } catch (error) {
     console.error("Error in user registration:", error);
@@ -103,7 +109,14 @@ router.post("/login", (req, res, next) => {
         // Store refresh token
         await storeRefreshToken(user.id, refreshToken);
 
-        // Set refresh token in HTTP-only cookie
+        // Set tokens in HTTP-only cookies
+        res.cookie("accessToken", accessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          maxAge: 15 * 60 * 1000, // 15 minutes
+        });
+
         res.cookie("refreshToken", refreshToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
@@ -111,7 +124,7 @@ router.post("/login", (req, res, next) => {
           maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
 
-        // Return user info and access token
+        // Return user info but no tokens in response body
         return res.json({
           success: true,
           message: "Login successful",
@@ -120,7 +133,6 @@ router.post("/login", (req, res, next) => {
             name: user.name,
             email: user.email,
           },
-          accessToken,
         });
       } catch (error) {
         return next(error);
@@ -164,18 +176,6 @@ router.post("/refresh-token", async (req, res) => {
       });
     }
 
-    // Verify that the stored refresh token matches
-    // When using bcrypt, we can't decrypt the token, but we can compare
-    // Since we're already verified the JWT signature and expiration,
-    // We could skip this step in a simplified implementation
-    // const isValidToken = await bcrypt.compare(refreshToken, user.refreshToken);
-    // if (!isValidToken) {
-    //   return res.status(401).json({
-    //     success: false,
-    //     message: 'Invalid refresh token'
-    //   });
-    // }
-
     // Generate new tokens
     const userData = {
       id: user.id,
@@ -189,7 +189,14 @@ router.post("/refresh-token", async (req, res) => {
     // Store new refresh token
     await storeRefreshToken(user.id, newRefreshToken);
 
-    // Set new refresh token in HTTP-only cookie
+    // Set new tokens in HTTP-only cookies
+    res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -197,10 +204,10 @@ router.post("/refresh-token", async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    // Return new access token
+    // Return success
     return res.json({
       success: true,
-      accessToken: newAccessToken,
+      message: "Token refreshed successfully",
     });
   } catch (error) {
     console.error("Error refreshing token:", error);
@@ -228,7 +235,8 @@ router.post("/logout", async (req, res) => {
       }
     }
 
-    // Clear the refresh token cookie
+    // Clear both cookies
+    res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
 
     res.json({

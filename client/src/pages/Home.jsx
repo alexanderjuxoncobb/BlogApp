@@ -4,17 +4,13 @@ import { useAuth } from "../contexts/AuthContext";
 function Home() {
   const [message, setMessage] = useState("");
   const [users, setUsers] = useState([]);
-  const { currentUser, token } = useAuth();
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch("http://localhost:5000/users", {
-          headers: token
-            ? {
-                Authorization: `Bearer ${token}`,
-              }
-            : {},
+          credentials: "include", // Include cookies with request
         });
         const data = await response.json();
         setMessage(data.message);
@@ -25,7 +21,7 @@ function Home() {
     };
 
     fetchData();
-  }, [token]);
+  }, []);
 
   return (
     <div>

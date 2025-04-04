@@ -41,7 +41,13 @@ passport.use(
 
 // Configure JWT strategy for token-based authentication
 const jwtOptions = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  // Extract JWT from the 'accessToken' cookie instead of Authorization header
+  jwtFromRequest: (req) => {
+    if (req && req.cookies) {
+      return req.cookies.accessToken;
+    }
+    return null;
+  },
   secretOrKey: jwtConfig.secret,
 };
 

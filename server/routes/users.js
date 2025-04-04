@@ -19,6 +19,7 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch users" });
   }
 });
+
 router.delete("/:id", async (req, res) => {
   try {
     const userId = parseInt(req.params.id);

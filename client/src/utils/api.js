@@ -4,20 +4,11 @@
 
 const API_URL = "http://localhost:5000";
 
-// Get the authentication token from localStorage
-const getToken = () => localStorage.getItem("token");
-
 // Helper function for making authenticated requests
 export const apiRequest = async (endpoint, options = {}) => {
-  const token = getToken();
-
   const defaultHeaders = {
     "Content-Type": "application/json",
   };
-
-  if (token) {
-    defaultHeaders["Authorization"] = `Bearer ${token}`;
-  }
 
   const config = {
     ...options,
@@ -25,20 +16,18 @@ export const apiRequest = async (endpoint, options = {}) => {
       ...defaultHeaders,
       ...options.headers,
     },
-    credentials: "include", // Include cookies for refresh token
+    credentials: "include", // Important for sending cookies with requests
   };
 
   try {
     const response = await fetch(`${API_URL}${endpoint}`, config);
 
-    // If response is unauthorized and we have a token, try to refresh
-    if (response.status === 401 && token) {
+    // If response is unauthorized, try to refresh the token
+    if (response.status === 401) {
       const refreshSuccess = await refreshToken();
 
       if (refreshSuccess) {
-        // Retry the request with the new token
-        const newToken = getToken();
-        config.headers["Authorization"] = `Bearer ${newToken}`;
+        // Retry the request with the new token (which will be in cookies)
         return fetch(`${API_URL}${endpoint}`, config);
       }
     }
@@ -58,11 +47,7 @@ export const refreshToken = async () => {
       credentials: "include",
     });
 
-    if (!response.ok) return false;
-
-    const data = await response.json();
-    localStorage.setItem("token", data.accessToken);
-    return true;
+    return response.ok;
   } catch (error) {
     console.error("Failed to refresh token:", error);
     return false;

@@ -5,29 +5,22 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-    const [currentUser, setCurrentUser] = useState(null);
-    //TODO: remove local storage and make httponly cookies?
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if token exists and fetch user data
-    if (token) {
-      fetchUserProfile();
-    } else {
-      setLoading(false);
-    }
-  }, [token]);
+    // Check if user is authenticated by trying to fetch user profile
+    fetchUserProfile();
+  }, []);
 
   const fetchUserProfile = async () => {
     try {
       const response = await fetch("http://localhost:5000/auth/profile", {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        credentials: "include",
+        credentials: "include", // Important for sending cookies
       });
 
       if (response.ok) {
@@ -37,12 +30,12 @@ export const AuthProvider = ({ children }) => {
         // Token might be expired, try to refresh
         const refreshSuccess = await refreshToken();
         if (!refreshSuccess) {
-          logout();
+          setCurrentUser(null);
         }
       }
     } catch (error) {
       console.error("Error fetching user profile:", error);
-      logout();
+      setCurrentUser(null);
     } finally {
       setLoading(false);
     }
@@ -62,9 +55,8 @@ export const AuthProvider = ({ children }) => {
       );
 
       if (response.ok) {
-        const data = await response.json();
-        setToken(data.accessToken);
-        localStorage.setItem("token", data.accessToken);
+        // After refreshing, fetch the user profile again
+        await fetchUserProfile();
         return true;
       }
       return false;
@@ -89,8 +81,6 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         setCurrentUser(data.user);
-        setToken(data.accessToken);
-        localStorage.setItem("token", data.accessToken);
         return { success: true };
       } else {
         return { success: false, message: data.message };
@@ -116,8 +106,6 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         setCurrentUser(data.user);
-        setToken(data.accessToken);
-        localStorage.setItem("token", data.accessToken);
         return { success: true };
       } else {
         return { success: false, message: data.message };
@@ -138,14 +126,11 @@ export const AuthProvider = ({ children }) => {
       console.error("Error logging out:", error);
     } finally {
       setCurrentUser(null);
-      setToken(null);
-      localStorage.removeItem("token");
     }
   };
 
   const value = {
     currentUser,
-    token,
     loading,
     register,
     login,
