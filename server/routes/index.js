@@ -6,11 +6,11 @@ import { authenticateJWT } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Public routes
-router.use("/users", userRoutes);
-
 // Protected routes
-router.use("/posts", authenticateJWT, postRoutes);
-router.use("/comments", authenticateJWT, commentRoutes);
+router.use("/users", authenticateJWT, userRoutes);
+
+// Public routes
+router.use("/posts", postRoutes);
+router.use("/comments", commentRoutes);
 
 export default router;
