@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
-import { dirname } from "path";
+import { dirname, join } from "path";
 import cookieParser from "cookie-parser";
 import passport from "./config/passport.js";
 import routes from "./routes/index.js";
@@ -18,7 +18,10 @@ const PORT = process.env.PORT || 5000;
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.CLIENT_URL || "http://localhost:5174", // Frontend URL
+  origin: [
+    process.env.CLIENT_URL || "http://localhost:5173", // Regular client URL
+    process.env.ADMIN_CLIENT_URL || "http://localhost:5174", // Admin client URL
+  ],
   credentials: true, // Allow cookies to be sent with requests
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   preflightContinue: false,
@@ -37,6 +40,25 @@ app.use(passport.initialize());
 // Routes
 app.use("/auth", authRoutes);
 app.use("/", routes);
+
+// Serve admin and user clients from different directories in production
+if (process.env.NODE_ENV === 'production') {
+  // Serve the regular user client
+  app.use(express.static(join(__dirname, '../client-user/dist')));
+  
+  // Serve the admin client on a specific route
+  app.use('/admin', express.static(join(__dirname, '../client-admin/dist')));
+  
+  // Handle client-side routing for admin client
+  app.get('/admin/*', (req, res) => {
+    res.sendFile(join(__dirname, '../client-admin/dist/index.html'));
+  });
+  
+  // Handle client-side routing for regular client
+  app.get('/*', (req, res) => {
+    res.sendFile(join(__dirname, '../client-user/dist/index.html'));
+  });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {

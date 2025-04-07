@@ -1,25 +1,28 @@
+// server/services/authService.js
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { jwtConfig } from "../config/jwt.js";
 import prisma from "../utils/prisma.js";
 
-// Generate access token
+// Generate access token with role information
 export const generateAccessToken = (user) => {
   return jwt.sign(
     {
       sub: user.id,
       email: user.email,
+      role: user.role || "USER", // Include user role in token
     },
     jwtConfig.secret,
     { expiresIn: jwtConfig.accessTokenExpiry }
   );
 };
 
-// Generate refresh token
+// Generate refresh token with role information
 export const generateRefreshToken = (user) => {
   return jwt.sign(
     {
       sub: user.id,
+      role: user.role || "USER", // Include user role in refresh token as well
     },
     jwtConfig.secret,
     { expiresIn: jwtConfig.refreshTokenExpiry }

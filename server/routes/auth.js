@@ -32,17 +32,19 @@ router.post("/register", async (req, res) => {
     // Hash the password
     const hashedPassword = await hashPassword(password);
 
-    // Create the new user
+    // Create the new user with default role USER
     const newUser = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
+        role: "USER", // Default role is USER
       },
       select: {
         id: true,
         name: true,
         email: true,
+        role: true,
       },
     });
 
@@ -102,12 +104,23 @@ router.post("/login", (req, res, next) => {
           });
         }
 
-        // Generate tokens
-        const accessToken = generateAccessToken(user);
-        const refreshToken = generateRefreshToken(user);
+        // Get full user details including role
+        const fullUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        });
+
+        // Generate tokens with role info
+        const accessToken = generateAccessToken(fullUser);
+        const refreshToken = generateRefreshToken(fullUser);
 
         // Store refresh token
-        await storeRefreshToken(user.id, refreshToken);
+        await storeRefreshToken(fullUser.id, refreshToken);
 
         // Set tokens in HTTP-only cookies
         res.cookie("accessToken", accessToken, {
@@ -124,15 +137,20 @@ router.post("/login", (req, res, next) => {
           maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
 
+        // Determine redirect based on role
+        const redirect = fullUser.role === "ADMIN" ? "/admin" : "/";
+
         // Return user info but no tokens in response body
         return res.json({
           success: true,
           message: "Login successful",
           user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
+            id: fullUser.id,
+            name: fullUser.name,
+            email: fullUser.email,
+            role: fullUser.role,
           },
+          redirect: redirect,
         });
       } catch (error) {
         return next(error);
@@ -167,6 +185,13 @@ router.post("/refresh-token", async (req, res) => {
     // Get user from the token
     const user = await prisma.user.findUnique({
       where: { id: decoded.sub },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        refreshToken: true,
+      },
     });
 
     if (!user || !user.refreshToken) {
@@ -177,14 +202,8 @@ router.post("/refresh-token", async (req, res) => {
     }
 
     // Generate new tokens
-    const userData = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-    };
-
-    const newAccessToken = generateAccessToken(userData);
-    const newRefreshToken = generateRefreshToken(userData);
+    const newAccessToken = generateAccessToken(user);
+    const newRefreshToken = generateRefreshToken(user);
 
     // Store new refresh token
     await storeRefreshToken(user.id, newRefreshToken);
@@ -221,6 +240,7 @@ router.post("/refresh-token", async (req, res) => {
 
 // Logout route
 router.post("/logout", async (req, res) => {
+  console.log("i've been hit");
   try {
     // Get refresh token from cookie
     const refreshToken = req.cookies.refreshToken;

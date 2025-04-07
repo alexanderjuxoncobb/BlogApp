@@ -61,6 +61,7 @@ passport.use(
           id: true,
           email: true,
           name: true,
+          role: true, // Include role in the user object
         },
       });
 
@@ -89,6 +90,7 @@ passport.deserializeUser(async (id, done) => {
         id: true,
         email: true,
         name: true,
+        role: true, // Include role here as well
       },
     });
     done(null, user);
