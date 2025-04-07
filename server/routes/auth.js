@@ -277,8 +277,14 @@ router.post("/logout", async (req, res) => {
 router.get(
   "/profile",
   passport.authenticate("jwt", { session: false }),
-  (req, res) => {
-    res.json({
+  async (req, res) => {
+    const postCount = await prisma.post.count({
+      where: { authorId: req.user.id },
+    });
+
+    req.user.postCount = postCount;
+
+    return res.json({
       success: true,
       message: "Protected route accessed successfully",
       user: req.user,
