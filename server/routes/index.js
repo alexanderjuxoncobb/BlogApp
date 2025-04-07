@@ -8,14 +8,16 @@ import { authenticateJWT } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Protected routes
-router.use("/users", authenticateJWT, userRoutes);
+// User routes - some endpoints are protected within the route file
+router.use("/users", userRoutes);
 
 // Admin routes - protected by isAdmin middleware within the admin routes file
 router.use("/admin", adminRoutes);
 
-// Public routes
+// Post routes - some endpoints are protected within the route file
 router.use("/posts", postRoutes);
+
+// Comment routes - some endpoints might be protected within the route file
 router.use("/comments", commentRoutes);
 
 export default router;
