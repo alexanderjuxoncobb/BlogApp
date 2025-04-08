@@ -46,24 +46,26 @@ function Register() {
   return (
     <div className="max-w-md mx-auto">
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Create an account</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mt-12">
+          Create an account
+        </h1>
         <p className="text-gray-600 mt-2">
           Join our community and start sharing
         </p>
       </div>
 
-      <div className="card">
+      <div className="card p-8">
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
               htmlFor="name"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-gray-700 mb-2"
             >
               Name
             </label>
@@ -81,7 +83,7 @@ function Register() {
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-gray-700 mb-2"
             >
               Email
             </label>
@@ -97,12 +99,14 @@ function Register() {
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Password
-            </label>
+            <div className="flex justify-between mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Password
+              </label>
+            </div>
             <input
               type="password"
               id="password"
@@ -120,7 +124,7 @@ function Register() {
           <div>
             <label
               htmlFor="confirmPassword"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-gray-700 mb-2"
             >
               Confirm Password
             </label>
@@ -138,7 +142,7 @@ function Register() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn-primary py-2.5"
+            className="w-full btn-primary py-2.5 mt-6 rounded-md"
           >
             {loading ? "Creating Account..." : "Sign up"}
           </button>

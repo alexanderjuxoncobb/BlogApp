@@ -1,6 +1,6 @@
 function About() {
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
           About Our Blog
@@ -8,7 +8,7 @@ function About() {
         <div className="h-1 w-20 bg-primary-600 mx-auto"></div>
       </div>
 
-      <div className="card mb-8">
+      <div className="mb-8 p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">
           Our Mission
         </h2>
@@ -23,7 +23,7 @@ function About() {
         </p>
       </div>
 
-      <div className="card mb-8">
+      <div className="mb-8 p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Features</h2>
         <ul className="space-y-3 text-gray-700">
           <li className="flex items-start">
@@ -104,12 +104,12 @@ function About() {
         </ul>
       </div>
 
-      <div className="card">
+      <div className="p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">
           Technologies Used
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="bg-gray-50 p-6 rounded-lg">
             <div className="font-medium text-gray-900">Frontend</div>
             <ul className="mt-2 text-sm text-gray-600">
               <li>React</li>
@@ -118,7 +118,7 @@ function About() {
               <li>Vite</li>
             </ul>
           </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="bg-gray-50 p-6 rounded-lg">
             <div className="font-medium text-gray-900">Backend</div>
             <ul className="mt-2 text-sm text-gray-600">
               <li>Node.js</li>
@@ -127,7 +127,7 @@ function About() {
               <li>Prisma ORM</li>
             </ul>
           </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="bg-gray-50 p-6 rounded-lg">
             <div className="font-medium text-gray-900">Authentication</div>
             <ul className="mt-2 text-sm text-gray-600">
               <li>JWT</li>
@@ -142,4 +142,4 @@ function About() {
   );
 }
 
-export default About;
+export default About; // Proper export statement

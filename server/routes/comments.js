@@ -39,6 +39,9 @@ router.get("/:postId", async (req, res) => {
         content: true,
         postId: true,
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     // Store in cache for future requests

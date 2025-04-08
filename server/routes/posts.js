@@ -31,6 +31,10 @@ router.get("/", async (req, res) => {
         title: true,
         content: true,
         authorId: true,
+        author: true,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
