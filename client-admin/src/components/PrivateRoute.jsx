@@ -14,3 +14,7 @@ function PrivateRoute({ children }) {
 }
 
 export default PrivateRoute;
+
+
+//TODO: is this even being used anymore? i think i put into App.jsx
+

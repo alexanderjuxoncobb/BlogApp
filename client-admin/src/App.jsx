@@ -1,87 +1,117 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import PrivateRoute from "./components/PrivateRoute";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import Users from "./pages/Users";
-import NotFound from "./pages/NotFound";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./components/Login";
-import Register from "./components/Register";
-import { useAuth } from "./contexts/AuthContext";
+import Dashboard from "./pages/Dashboard";
+import PostsPage from "./pages/PostsPage";
+import EditPostPage from "./pages/EditPostPage";
+import CreatePostPage from "./pages/CreatePostPage";
+import UsersPage from "./pages/UsersPage";
+import CommentsPage from "./pages/CommentsPage";
+import Layout from "./components/Layout";
 import "./App.css";
 
-// NavBar component with conditional rendering based on auth state
-function NavBar() {
-  const { currentUser, logout } = useAuth();
+function PrivateRoute({ children }) {
+  const { currentUser, loading, logout } = useAuth();
 
-  return (
-    <nav>
-      <ul>
-        <li>
-          <Link to="/">Home</Link>
-        </li>
-        <li>
-          <Link to="/about">About</Link>
-        </li>
-        {currentUser ? (
-          <>
-            <li>
-              <Link to="/users">Users</Link>
-            </li>
-            <li>
-              <button onClick={logout} className="logout-button">
-                Logout
-              </button>
-            </li>
-          </>
-        ) : (
-          <>
-            <li>
-              <Link to="/login">Login</Link>
-            </li>
-            <li>
-              <Link to="/register">Register</Link>
-            </li>
-          </>
-        )}
-      </ul>
-    </nav>
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return currentUser && currentUser.role === "ADMIN" ? (
+    children
+  ) : (
+    <Navigate to="/login" />
   );
 }
 
-// Main App component
 function AppContent() {
   return (
-    <div className="app-container">
-      <NavBar />
+    <Routes>
+      <Route path="/login" element={<Login />} />
 
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route
-          path="/users"
-          element={
-            <PrivateRoute>
-              <Users />
-            </PrivateRoute>
-          }
-        />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </div>
+      <Route
+        path="/"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <Dashboard />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/posts"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <PostsPage />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/posts/create"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <CreatePostPage />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/posts/:id/edit"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <EditPostPage />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/users"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <UsersPage />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/comments"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <CommentsPage />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
   );
 }
 
-// App with auth provider
 function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <AuthProvider>
         <AppContent />
       </AuthProvider>
-    </BrowserRouter>
+    </Router>
   );
 }
 

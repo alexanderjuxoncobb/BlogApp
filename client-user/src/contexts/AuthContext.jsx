@@ -1,3 +1,4 @@
+// client-user/src/contexts/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
@@ -43,16 +44,13 @@ export const AuthProvider = ({ children }) => {
 
   const refreshToken = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:5000/auth/refresh-token",
-        {
-          method: "POST",
-          credentials: "include", // Important for cookies
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch("http://localhost:5000/auth/refresh-token", {
+        method: "POST",
+        credentials: "include", // Important for cookies
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.ok) {
         // After refreshing, fetch the user profile again
@@ -106,6 +104,7 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         setCurrentUser(data.user);
+
         return { success: true };
       } else {
         return { success: false, message: data.message };
@@ -126,6 +125,10 @@ export const AuthProvider = ({ children }) => {
       console.error("Error logging out:", error);
     } finally {
       setCurrentUser(null);
+      // Redirect to home page after logout
+      console.log("i have seen this (client-user)");
+
+      window.location.href = "/";
     }
   };
 

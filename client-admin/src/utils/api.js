@@ -1,98 +1,100 @@
-/**
- * Utility functions for API requests with authentication
- */
-
+// Utility for making authenticated API requests
 const API_URL = "http://localhost:5000";
 
-// Helper function for making authenticated requests
-export const apiRequest = async (endpoint, options = {}) => {
-  const defaultHeaders = {
-    "Content-Type": "application/json",
-  };
-
-  const config = {
-    ...options,
-    headers: {
-      ...defaultHeaders,
-      ...options.headers,
-    },
-    credentials: "include", // Important for sending cookies with requests
-  };
-
+export const fetchPosts = async () => {
   try {
-    const response = await fetch(`${API_URL}${endpoint}`, config);
+    const response = await fetch(`${API_URL}/admin/posts`, {
+      credentials: "include",
+    });
 
-    // If response is unauthorized, try to refresh the token
-    if (response.status === 401) {
-      const refreshSuccess = await refreshToken();
-
-      if (refreshSuccess) {
-        // Retry the request with the new token (which will be in cookies)
-        return fetch(`${API_URL}${endpoint}`, config);
-      }
+    if (!response.ok) {
+      throw new Error("Failed to fetch posts");
     }
 
-    return response;
+    return await response.json();
   } catch (error) {
-    console.error("API request failed:", error);
+    console.error("Error fetching posts:", error);
     throw error;
   }
 };
 
-// Function to refresh the token
-export const refreshToken = async () => {
+export const fetchPost = async (id) => {
   try {
-    const response = await fetch(`${API_URL}/auth/refresh-token`, {
-      method: "POST",
+    const response = await fetch(`${API_URL}/admin/posts/${id}`, {
       credentials: "include",
     });
 
-    return response.ok;
+    if (!response.ok) {
+      throw new Error("Failed to fetch post");
+    }
+
+    return await response.json();
   } catch (error) {
-    console.error("Failed to refresh token:", error);
-    return false;
+    console.error(`Error fetching post ${id}:`, error);
+    throw error;
   }
 };
 
-// Common API functions
-export const getUserProfile = async () => {
-  const response = await apiRequest("/auth/profile");
-  if (!response.ok) throw new Error("Failed to fetch user profile");
-  return response.json();
-};
-
-export const getUsers = async () => {
-  const response = await apiRequest("/users");
-  if (!response.ok) throw new Error("Failed to fetch users");
-  return response.json();
-};
-
-export const getPosts = async () => {
-  const response = await apiRequest("/posts");
-  if (!response.ok) throw new Error("Failed to fetch posts");
-  return response.json();
-};
-
 export const createPost = async (postData) => {
-  const response = await apiRequest("/posts", {
-    method: "POST",
-    body: JSON.stringify(postData),
-  });
-  if (!response.ok) throw new Error("Failed to create post");
-  return response.json();
+  try {
+    const response = await fetch(`${API_URL}/admin/posts`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(postData),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to create post");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error creating post:", error);
+    throw error;
+  }
 };
 
-export const getComments = async (postId) => {
-  const response = await apiRequest(`/comments/${postId}`);
-  if (!response.ok) throw new Error("Failed to fetch comments");
-  return response.json();
+export const updatePost = async (id, postData) => {
+  try {
+    const response = await fetch(`${API_URL}/admin/posts/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(postData),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update post");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error(`Error updating post ${id}:`, error);
+    throw error;
+  }
 };
 
-export const createComment = async (commentData) => {
-  const response = await apiRequest("/comments", {
-    method: "POST",
-    body: JSON.stringify(commentData),
-  });
-  if (!response.ok) throw new Error("Failed to create comment");
-  return response.json();
+export const deletePost = async (id) => {
+  try {
+    const response = await fetch(`${API_URL}/admin/posts/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to delete post");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error(`Error deleting post ${id}:`, error);
+    throw error;
+  }
 };
+
+// Similar functions for users and comments...

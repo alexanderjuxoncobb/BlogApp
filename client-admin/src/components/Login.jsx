@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -8,8 +8,35 @@ function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { login } = useAuth();
+  const {
+    login,
+    currentUser,
+    loading: authLoading,
+    isAdmin,
+    logout,
+  } = useAuth();
   const navigate = useNavigate();
+
+  // If already authenticated as admin, redirect to dashboard
+  if (currentUser && isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
+  // If authenticated but not an admin, show error and provide logout option
+  if (currentUser && !isAdmin) {
+    return (
+      <div className="login-container">
+        <h2>Access Denied</h2>
+        <p>You do not have admin privileges.</p>
+        <button onClick={logout}>Logout</button>
+      </div>
+    );
+  }
+
+  // Show loading state if authentication is still checking
+  if (authLoading) {
+    return <div>Loading...</div>;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +48,11 @@ function Login() {
       const result = await login(email, password);
 
       if (result.success) {
-        navigate("/");
+        if (result.isAdmin) {
+          navigate("/");
+        } else {
+          setError("Access denied. Admin privileges required.");
+        }
       } else {
         setError(result.message || "Failed to log in");
       }
