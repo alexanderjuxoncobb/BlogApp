@@ -1,7 +1,8 @@
-// UserPosts.jsx - Redesigned User Posts Page
+// UserPosts.jsx - Updated with PublishToggle component
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import PublishToggle from "../components/PublishToggle";
 
 function UserPosts() {
   const [posts, setPosts] = useState([]);
@@ -15,7 +16,7 @@ function UserPosts() {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:5000/posts/user/${currentUser.id}`,
+        `http://localhost:5000/posts/my-posts`,
         {
           credentials: "include",
         }
@@ -61,6 +62,16 @@ function UserPosts() {
       console.error("Error deleting post:", error);
       alert("Failed to delete post");
     }
+  };
+
+  // Handle toggling post published status callback
+  const handlePublishToggle = (postId, newStatus) => {
+    // Update the post status in the state
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId ? { ...post, published: newStatus } : post
+      )
+    );
   };
 
   // Format date to a readable string
@@ -173,18 +184,14 @@ function UserPosts() {
                             ? formatDate(post.createdAt)
                             : "Date unknown"}
                         </span>
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            post.published
-                              ? "bg-green-100 text-green-800"
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}
-                        >
-                          {post.published ? "Published" : "Draft"}
-                        </span>
+                        <PublishToggle
+                          postId={post.id}
+                          initialStatus={post.published}
+                          onToggleSuccess={handlePublishToggle}
+                        />
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-wrap items-center space-x-2">
                       <Link
                         to={`/posts/${post.id}`}
                         className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"

@@ -114,7 +114,7 @@ function Register() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="••••••••"
+              placeholder="password"
             />
             <p className="mt-1 text-xs text-gray-500">
               Must be at least 6 characters
@@ -135,7 +135,7 @@ function Register() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              placeholder="••••••••"
+              placeholder="confirm password"
             />
           </div>
 

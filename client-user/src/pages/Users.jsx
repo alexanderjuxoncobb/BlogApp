@@ -34,7 +34,7 @@ function Users() {
 
   return (
     <div>
-      <div className="mb-8">
+      <div className="my-8 ml-6 lg:ml-12">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Community Members
         </h1>
@@ -52,11 +52,11 @@ function Users() {
           {error}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 lg:p-12">
           {users.map((user) => (
             <div
               key={user.id}
-              className="card hover:shadow-lg transition-shadow"
+              className="card hover:shadow-lg transition-shadow px-6 lg:px-12"
             >
               <div className="flex items-center mb-4">
                 <div className="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-medium text-lg mr-4">
@@ -70,15 +70,6 @@ function Users() {
                   </h3>
                   <p className="text-sm text-gray-600">{user.email}</p>
                 </div>
-              </div>
-
-              <div className="border-t border-gray-100 pt-4 mt-2">
-                <Link
-                  to={`/users/${user.id}`}
-                  className="text-primary-600 hover:text-primary-800 text-sm font-medium"
-                >
-                  View Profile
-                </Link>
               </div>
             </div>
           ))}

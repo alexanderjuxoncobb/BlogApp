@@ -1,9 +1,10 @@
-// PostDetail.jsx - Redesigned Post Detail Page
+// PostDetail.jsx - Updated with PublishToggle component
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import CommentForm from "../components/CommentForm";
 import CommentList from "../components/CommentList";
+import PublishToggle from "../components/PublishToggle";
 
 function PostDetail() {
   const { id } = useParams();
@@ -100,6 +101,11 @@ function PostDetail() {
       setIsAuthor(false);
     }
   }, [currentUser, post]);
+
+  // Handle toggling publish status
+  const handlePublishToggle = (postId, newStatus) => {
+    setPost((prev) => ({ ...prev, published: newStatus }));
+  };
 
   // Format date to a readable string
   const formatDate = (dateString) => {
@@ -283,11 +289,22 @@ function PostDetail() {
                   )}
                 </div>
               </div>
+
+              {/* Add PublishToggle for author */}
+              {isAuthor && (
+                <div className="ml-4">
+                  <PublishToggle
+                    postId={post.id}
+                    initialStatus={post.published}
+                    onToggleSuccess={handlePublishToggle}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Actions for post owner */}
             {isAuthor && (
-              <div className="flex space-x-3 mb-6">
+              <div className="flex flex-wrap space-x-3 mb-6">
                 <button
                   onClick={() => navigate(`/edit-post/${id}`)}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
@@ -307,9 +324,10 @@ function PostDetail() {
                   </svg>
                   Edit Post
                 </button>
+
                 <button
                   onClick={handleDeletePost}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-600 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                 >
                   <svg
                     className="h-4 w-4 mr-2"

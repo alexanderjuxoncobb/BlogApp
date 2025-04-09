@@ -1,4 +1,4 @@
-// CreatePost.jsx - Redesigned Create Post Page
+// CreatePost.jsx - Redesigned Create Post Page with published toggle
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -6,6 +6,7 @@ import { useAuth } from "../contexts/AuthContext";
 function CreatePost() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [published, setPublished] = useState(false); // Add published state
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -37,6 +38,7 @@ function CreatePost() {
         body: JSON.stringify({
           title,
           content,
+          published, // Include published status in creation
           authorId: currentUser.id,
         }),
       });
@@ -55,6 +57,11 @@ function CreatePost() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Toggle published status handler
+  const handlePublishedToggle = () => {
+    setPublished(!published);
   };
 
   return (
@@ -154,6 +161,30 @@ function CreatePost() {
               </p>
             </div>
 
+            {/* Published Toggle */}
+            <div className="mb-8">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="published"
+                  checked={published}
+                  onChange={handlePublishedToggle}
+                  className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded transition duration-200"
+                />
+                <label
+                  htmlFor="published"
+                  className="ml-2 block text-sm font-medium text-gray-700"
+                >
+                  Publish this post
+                </label>
+              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                {published
+                  ? "This post will be visible to everyone immediately."
+                  : "This post will be saved as a draft and only visible to you."}
+              </p>
+            </div>
+
             <div className="flex items-center justify-end space-x-4">
               <button
                 type="button"
@@ -193,7 +224,7 @@ function CreatePost() {
                     Publishing...
                   </>
                 ) : (
-                  "Publish Post"
+                  "Create Post"
                 )}
               </button>
             </div>

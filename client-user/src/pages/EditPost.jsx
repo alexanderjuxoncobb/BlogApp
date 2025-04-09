@@ -9,6 +9,7 @@ function EditPost() {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [published, setPublished] = useState(false); // Add published state
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false); // For form submission
   const [initialLoading, setInitialLoading] = useState(true); // For fetching initial data
@@ -47,11 +48,13 @@ function EditPost() {
           setIsAuthorized(true);
           setTitle(data.post.title || "");
           setContent(data.post.content || "");
+          setPublished(data.post.published || false); // Set published state
         } else {
           setIsAuthorized(false);
           // Still set data to show content if desired, but form won't submit
           setTitle(data.post.title || "");
           setContent(data.post.content || "");
+          setPublished(data.post.published || false); // Set published state even if not authorized
           setError("You are not authorized to edit this post.");
         }
       } catch (error) {
@@ -60,6 +63,7 @@ function EditPost() {
         // Ensure title/content are empty if fetch fails completely
         setTitle("");
         setContent("");
+        setPublished(false);
       } finally {
         setInitialLoading(false);
       }
@@ -106,6 +110,7 @@ function EditPost() {
         body: JSON.stringify({
           title,
           content,
+          published, // Include published status in update
         }),
       });
 
@@ -124,6 +129,11 @@ function EditPost() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Toggle published status handler
+  const handlePublishedToggle = () => {
+    setPublished(!published);
   };
 
   // Initial Loading State
@@ -237,6 +247,31 @@ function EditPost() {
               ></textarea>
               <p className="mt-2 text-xs text-gray-500">
                 Markdown is supported for formatting.
+              </p>
+            </div>
+
+            {/* Published Toggle */}
+            <div className="mb-8">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="published"
+                  checked={published}
+                  onChange={handlePublishedToggle}
+                  className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded transition duration-200 disabled:opacity-50"
+                  disabled={!isAuthorized || loading}
+                />
+                <label
+                  htmlFor="published"
+                  className="ml-2 block text-sm font-medium text-gray-700"
+                >
+                  Publish this post
+                </label>
+              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                {published
+                  ? "This post will be visible to everyone."
+                  : "This post is currently unpublished and only visible to you."}
               </p>
             </div>
 

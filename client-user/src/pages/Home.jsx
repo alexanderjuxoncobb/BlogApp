@@ -1,4 +1,4 @@
-// Home.jsx - Redesigned Home Page
+// Home.jsx - Updated to only show published posts
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -44,6 +44,9 @@ function Home() {
     const options = { year: "numeric", month: "long", day: "numeric" };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
+
+  // Get only published posts for display on homepage
+  // const publishedPosts = posts.filter((post) => post.published);
 
   return (
     <div>
@@ -192,7 +195,7 @@ function Home() {
                       {post.content}
                     </div>
                     <div className="flex justify-between items-center text-sm text-gray-500">
-                      <span>{post.author.name}</span>
+                      <span>{post.author?.name || "Anonymous"}</span>
                       {post.createdAt && (
                         <span>{formatDate(post.createdAt)}</span>
                       )}
@@ -240,7 +243,7 @@ function Home() {
                 />
               </svg>
               <h3 className="mt-2 text-lg font-medium text-gray-900">
-                No posts available yet
+                No published posts available yet
               </h3>
               <p className="mt-1 text-gray-500">
                 Be the first to create content for our community.

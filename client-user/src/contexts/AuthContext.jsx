@@ -27,7 +27,6 @@ export const AuthProvider = ({ children }) => {
       if (response.ok) {
         const data = await response.json();
         setCurrentUser(data.user);
-        console.log(data.user);
       } else {
         // Token might be expired, try to refresh
         const refreshSuccess = await refreshToken();
@@ -127,8 +126,6 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setCurrentUser(null);
       // Redirect to home page after logout
-      console.log("i have seen this (client-user)");
-
       window.location.href = "/";
     }
   };
