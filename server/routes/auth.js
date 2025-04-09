@@ -282,12 +282,21 @@ router.get(
       where: { authorId: req.user.id },
     });
 
-    req.user.postCount = postCount;
+    const dateCreated = await prisma.user.findFirst({
+      where: { id: req.user.id },
+      select: { createdAt: true },
+    });
+
+    const userProfile = {
+      ...req.user,
+      postCount,
+      createdAt: dateCreated.createdAt,
+    };
 
     return res.json({
       success: true,
       message: "Protected route accessed successfully",
-      user: req.user,
+      user: userProfile,
     });
   }
 );

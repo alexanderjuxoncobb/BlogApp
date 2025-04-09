@@ -26,6 +26,7 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   posts         Post[]
+  comments      Comment[]
 }
 
 model Post {
@@ -48,4 +49,6 @@ model Comment {
   updatedAt DateTime @updatedAt
   postId    Int
   post      Post     @relation(fields: [postId], references: [id])
+  userId    Int?      
+  user      User?     @relation(fields: [userId], references: [id]) 
 }

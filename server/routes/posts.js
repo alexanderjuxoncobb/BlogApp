@@ -1,16 +1,16 @@
 import express from "express";
 import prisma from "../utils/prisma.js";
 import { postsCache } from "../utils/cache.js";
-import { authenticateJWT } from "../middleware/authMiddleware.js";
+import {
+  authenticateJWT,
+  optionalAuthenticateJWT,
+} from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    // Check if refresh parameter is present
     const forceRefresh = req.query.refresh === "true";
-
-    // Check if data exists in cache and no refresh is requested
     const cacheKey = "all_posts";
     const cachedPosts = !forceRefresh ? postsCache.get(cacheKey) : null;
 
@@ -23,15 +23,19 @@ router.get("/", async (req, res) => {
       });
     }
 
-    // If not in cache or refresh requested, fetch from database
     console.log("Fetching posts from database");
     const posts = await prisma.post.findMany({
+      where: {
+        published: true,
+      },
       select: {
         id: true,
         title: true,
         content: true,
         authorId: true,
+        published: true,
         author: true,
+        createdAt: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -52,10 +56,72 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Get current user's posts
+router.get("/my-posts", authenticateJWT, async (req, res) => {
+  console.log("do you read me?");
+  try {
+    const userId = req.user.id;
+
+    // Check if refresh parameter is present
+    const forceRefresh = req.query.refresh === "true";
+
+    // Cache key specific to this user's posts
+    const cacheKey = `user_posts_${userId}`;
+    const cachedPosts = !forceRefresh ? postsCache.get(cacheKey) : null;
+
+    if (cachedPosts) {
+      return res.json({
+        success: true,
+        message: "Your posts",
+        posts: cachedPosts,
+      });
+    }
+
+    // Fetch posts from database
+    const posts = await prisma.post.findMany({
+      where: {
+        authorId: userId,
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        published: true, // Include published status
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: { comments: true },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    // Store in cache
+    postsCache.set(cacheKey, posts);
+
+    res.json({
+      success: true,
+      message: "Your posts",
+      posts,
+    });
+  } catch (error) {
+    console.error("Error fetching my posts:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch your posts",
+      error: error.message,
+    });
+  }
+});
+
 // Get a single post with comments
-router.get("/:id", async (req, res) => {
+// Get a single post with comments (updated secure version)
+router.get("/:id", optionalAuthenticateJWT, async (req, res) => {
   try {
     const postId = parseInt(req.params.id);
+    const userId = req.user?.id; // Optional chaining for safe access
 
     if (isNaN(postId)) {
       return res.status(400).json({
@@ -64,36 +130,35 @@ router.get("/:id", async (req, res) => {
       });
     }
 
-    // Check if refresh parameter is present
     const forceRefresh = req.query.refresh === "true";
-
-    // Cache key specific to this post
     const cacheKey = `post_detail_${postId}`;
     const cachedPost = !forceRefresh ? postsCache.get(cacheKey) : null;
 
+    // Check cached post permissions
     if (cachedPost) {
-      return res.json({
-        success: true,
-        post: cachedPost,
-      });
+      const isAuthor = userId === cachedPost.authorId;
+      if (!cachedPost.published && !isAuthor) {
+        return res.status(404).json({
+          success: false,
+          message: "Post not found",
+        });
+      }
+      return res.json({ success: true, post: cachedPost });
     }
 
-    // Fetch post with author and comments
+    // Fetch post from database with additional where clause
     const post = await prisma.post.findUnique({
-      where: { id: postId },
+      where: {
+        id: postId,
+        // Add database-level filtering
+        OR: [
+          { published: true },
+          { authorId: userId || -1 }, // -1 ensures no match if user not logged in
+        ],
+      },
       include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        comments: {
-          orderBy: {
-            createdAt: "desc",
-          },
-        },
+        author: { select: { id: true, name: true, email: true } },
+        comments: { orderBy: { createdAt: "desc" } },
       },
     });
 
@@ -104,13 +169,10 @@ router.get("/:id", async (req, res) => {
       });
     }
 
-    // Store in cache
-    postsCache.set(cacheKey, post);
+    // Store in cache with TTL
+    postsCache.set(cacheKey, post, 300); // 5 minutes cache
 
-    res.json({
-      success: true,
-      post,
-    });
+    res.json({ success: true, post });
   } catch (error) {
     console.error("Error fetching post details:", error);
     res.status(500).json({
@@ -166,12 +228,13 @@ router.get("/user/:userId", async (req, res) => {
     const posts = await prisma.post.findMany({
       where: {
         authorId: userId,
+        OR: [{ published: true }, { authorId: req.user?.id || -1 }],
       },
       select: {
         id: true,
         title: true,
         content: true,
-        published: true,
+        published: true, // Include published status
         createdAt: true,
         updatedAt: true,
         _count: {
@@ -197,65 +260,6 @@ router.get("/user/:userId", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch user posts",
-      error: error.message,
-    });
-  }
-});
-
-// Get current user's posts
-router.get("/my-posts", authenticateJWT, async (req, res) => {
-  try {
-    const userId = req.user.id;
-
-    // Check if refresh parameter is present
-    const forceRefresh = req.query.refresh === "true";
-
-    // Cache key specific to this user's posts
-    const cacheKey = `user_posts_${userId}`;
-    const cachedPosts = !forceRefresh ? postsCache.get(cacheKey) : null;
-
-    if (cachedPosts) {
-      return res.json({
-        success: true,
-        message: "Your posts",
-        posts: cachedPosts,
-      });
-    }
-
-    // Fetch posts from database
-    const posts = await prisma.post.findMany({
-      where: {
-        authorId: userId,
-      },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        published: true,
-        createdAt: true,
-        updatedAt: true,
-        _count: {
-          select: { comments: true },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-    // Store in cache
-    postsCache.set(cacheKey, posts);
-
-    res.json({
-      success: true,
-      message: "Your posts",
-      posts,
-    });
-  } catch (error) {
-    console.error("Error fetching my posts:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch your posts",
       error: error.message,
     });
   }
@@ -412,6 +416,7 @@ router.delete("/:id", authenticateJWT, async (req, res) => {
     // Invalidate relevant caches
     postsCache.del("all_posts");
     postsCache.del(`user_posts_${userId}`);
+    postsCache.del(`post_detail_${postId}`);
 
     res.status(204).send();
   } catch (error) {
@@ -430,15 +435,17 @@ router.delete("/:id", authenticateJWT, async (req, res) => {
   }
 });
 
+// Regular post creation without authentication
 router.post("/", async (req, res) => {
   try {
-    const { title, content, authorId } = req.body;
+    const { title, content, authorId, published = false } = req.body;
 
     const newPost = await prisma.post.create({
       data: {
         title,
         content,
         authorId,
+        published: Boolean(published),
       },
     });
 
@@ -453,6 +460,7 @@ router.post("/", async (req, res) => {
         title: newPost.title,
         content: newPost.content,
         authorId: newPost.authorId,
+        published: newPost.published,
       },
     });
   } catch (error) {

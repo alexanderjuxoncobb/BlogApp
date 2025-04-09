@@ -19,6 +19,29 @@ export const authenticateJWT = (req, res, next) => {
   })(req, res, next);
 };
 
+// Written with Gemini-2.5
+// Middleware that tries to authenticate JWT, but doesn't fail if no token/invalid token
+export const optionalAuthenticateJWT = (req, res, next) => {
+  passport.authenticate("jwt", { session: false }, (err, user, info) => {
+    // Handle potential errors from Passport
+    if (err) {
+      console.error("Optional Passport Authentication Error:", err);
+      // Still pass critical errors along
+      return next(err);
+    }
+
+    // If authentication was successful (user is truthy), attach user to request object
+    if (user) {
+      req.user = user;
+    }
+    // If authentication failed (user is falsy), req.user remains undefined
+
+    // Always proceed to the next middleware/route handler,
+    // regardless of authentication success or failure.
+    next();
+  })(req, res, next); // Invoke the Passport middleware
+};
+
 // Middleware to check if user is the author or has admin role
 export const isAuthorized = (req, res, next) => {
   // Check if user is authenticated
