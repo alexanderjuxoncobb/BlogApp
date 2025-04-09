@@ -27,6 +27,7 @@ export const AuthProvider = ({ children }) => {
       if (response.ok) {
         const data = await response.json();
         setCurrentUser(data.user);
+        console.log(data.user);
       } else {
         // Token might be expired, try to refresh
         const refreshSuccess = await refreshToken();

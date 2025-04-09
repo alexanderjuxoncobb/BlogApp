@@ -30,7 +30,10 @@ function NavBar() {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
-          <Link to="/" className="text-2xl font-bold text-sky-400">
+          <Link
+            to="/"
+            className="text-2xl font-bold text-sky-400"
+          >
             BlogApp
           </Link>
 
