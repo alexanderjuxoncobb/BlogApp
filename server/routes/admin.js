@@ -36,6 +36,83 @@ router.get("/users", async (req, res) => {
   }
 });
 
+// Get admin dashboard stats
+router.get("/dashboard/stats", async (req, res) => {
+  try {
+    // Count total users
+    const totalUsers = await prisma.user.count();
+
+    // Count total posts
+    const totalPosts = await prisma.post.count();
+
+    // Count published posts
+    const publishedPosts = await prisma.post.count({
+      where: { published: true },
+    });
+
+    // Count total comments
+    const totalComments = await prisma.comment.count();
+
+    // Get recent posts
+    const recentPosts = await prisma.post.findMany({
+      take: 5,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        published: true,
+        createdAt: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    // Get recent comments
+    const recentComments = await prisma.comment.findMany({
+      take: 5,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        name: true,
+        post: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
+    });
+
+    res.json({
+      success: true,
+      stats: {
+        totalUsers,
+        totalPosts,
+        publishedPosts,
+        totalComments,
+      },
+      recentActivity: {
+        posts: recentPosts,
+        comments: recentComments,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch dashboard statistics",
+      error: error.message,
+    });
+  }
+});
+
 // Change user role to ADMIN
 router.patch("/users/:id/make-admin", async (req, res) => {
   try {
