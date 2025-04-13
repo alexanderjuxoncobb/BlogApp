@@ -1,4 +1,4 @@
-/* index.css - Admin Theme */
+/* index.css - Admin Theme with consistent styling matching user frontend */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700&display=swap");
 
 @import "tailwindcss/preflight" layer(base);
@@ -18,17 +18,17 @@
   --color-primary-800: #075985;
   --color-primary-900: #0c4a6e;
 
-  /* Secondary colors */
-  --color-secondary-50: #f5f3ff;
-  --color-secondary-100: #ede9fe;
-  --color-secondary-200: #ddd6fe;
-  --color-secondary-300: #c4b5fd;
-  --color-secondary-400: #a78bfa;
-  --color-secondary-500: #8b5cf6;
-  --color-secondary-600: #7c3aed;
-  --color-secondary-700: #6d28d9;
-  --color-secondary-800: #5b21b6;
-  --color-secondary-900: #4c1d95;
+  /* Admin accent colors */
+  --color-admin-50: #f0f9ff;
+  --color-admin-100: #e0f2fe;
+  --color-admin-200: #bae6fd;
+  --color-admin-300: #7dd3fc;
+  --color-admin-400: #38bdf8;
+  --color-admin-500: #0ea5e9;
+  --color-admin-600: #0284c7;
+  --color-admin-700: #0369a1;
+  --color-admin-800: #075985;
+  --color-admin-900: #0c4a6e;
 
   /* Font families */
   --font-sans: "Inter", system-ui, sans-serif;
@@ -413,8 +413,8 @@ body {
 }
 
 .status-badge.admin {
-  background-color: #bae6fd; /* sky-200 */
-  color: #075985; /* sky-800 */
+  background-color: #e0f2fe; /* sky-100 */
+  color: #0369a1; /* sky-700 */
 }
 
 .status-badge.user {

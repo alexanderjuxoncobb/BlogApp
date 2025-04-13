@@ -5,9 +5,9 @@ function Sidebar() {
   const { currentAdmin } = useAdminAuth();
 
   return (
-    <div className="bg-gray-800 text-white h-full min-h-screen w-64 flex flex-col">
+    <div className="bg-gray-900 text-white h-full min-h-screen w-64 flex flex-col">
       <div className="p-4 border-b border-gray-700">
-        <h2 className="text-2xl font-bold text-admin-400">BlogApp Admin</h2>
+        <h2 className="text-2xl font-bold text-sky-400">BlogApp Admin</h2>
         <div className="mt-2 text-sm text-gray-400">
           {currentAdmin?.name || currentAdmin?.email || "Admin"}
         </div>
@@ -17,7 +17,7 @@ function Sidebar() {
         <NavLink
           to="/"
           className={({ isActive }) =>
-            `sidebar-nav-item ${isActive ? "active" : ""}`
+            `sidebar-nav-item ${isActive ? "bg-sky-600 text-white" : ""}`
           }
           end
         >
@@ -40,7 +40,7 @@ function Sidebar() {
         <NavLink
           to="/posts"
           className={({ isActive }) =>
-            `sidebar-nav-item ${isActive ? "active" : ""}`
+            `sidebar-nav-item ${isActive ? "bg-sky-600 text-white" : ""}`
           }
         >
           <svg
@@ -62,7 +62,7 @@ function Sidebar() {
         <NavLink
           to="/comments"
           className={({ isActive }) =>
-            `sidebar-nav-item ${isActive ? "active" : ""}`
+            `sidebar-nav-item ${isActive ? "bg-sky-600 text-white" : ""}`
           }
         >
           <svg
@@ -84,7 +84,7 @@ function Sidebar() {
         <NavLink
           to="/users"
           className={({ isActive }) =>
-            `sidebar-nav-item ${isActive ? "active" : ""}`
+            `sidebar-nav-item ${isActive ? "bg-sky-600 text-white" : ""}`
           }
         >
           <svg

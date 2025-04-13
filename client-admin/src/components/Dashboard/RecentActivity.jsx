@@ -34,7 +34,7 @@ function RecentActivity({ activities }) {
         );
       case "post_updated":
         return (
-          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+          <div className="h-8 w-8 rounded-full bg-sky-100 flex items-center justify-center text-sky-600">
             <svg
               className="h-4 w-4"
               fill="none"
@@ -108,7 +108,7 @@ function RecentActivity({ activities }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white rounded-lg shadow p-6 transition-all duration-200 hover:shadow-md h-full">
       <h3 className="text-lg font-medium text-gray-800 mb-4">
         Recent Activity
       </h3>
@@ -116,7 +116,7 @@ function RecentActivity({ activities }) {
       <div className="space-y-4">
         {activities && activities.length > 0 ? (
           activities.map((activity, index) => (
-            <div key={index} className="flex items-start">
+            <div key={index} className="flex items-start group">
               {getIcon(activity.type)}
               <div className="ml-4">
                 <p className="text-sm text-gray-800">{activity.message}</p>
@@ -127,7 +127,7 @@ function RecentActivity({ activities }) {
                   {activity.link && (
                     <Link
                       to={activity.link}
-                      className="ml-3 text-xs text-admin-600 hover:text-admin-800"
+                      className="ml-3 text-xs text-sky-600 hover:text-sky-800 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       View details →
                     </Link>

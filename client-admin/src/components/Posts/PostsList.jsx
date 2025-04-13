@@ -53,26 +53,26 @@ function PostsList({ posts, onDelete, onPublishToggle }) {
     <div className="bg-white shadow rounded-lg overflow-hidden">
       {/* Bulk Actions */}
       {selectedPosts.length > 0 && (
-        <div className="p-4 bg-gray-50 border-b border-gray-200">
+        <div className="p-4 bg-sky-50 border-b border-sky-100">
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-700 font-medium">
               {selectedPosts.length} posts selected
             </span>
             <button
               onClick={() => handleBulkPublish(true)}
-              className="btn-secondary text-xs py-1 px-3"
+              className="py-1.5 px-3 text-xs font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 transition-colors"
             >
               Publish
             </button>
             <button
               onClick={() => handleBulkPublish(false)}
-              className="btn-secondary text-xs py-1 px-3"
+              className="py-1.5 px-3 text-xs font-medium rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
             >
               Unpublish
             </button>
             <button
               onClick={handleBulkDelete}
-              className="btn-danger text-xs py-1 px-3"
+              className="py-1.5 px-3 text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition-colors"
             >
               Delete
             </button>
@@ -90,7 +90,7 @@ function PostsList({ posts, onDelete, onPublishToggle }) {
                 checked={
                   selectedPosts.length === posts.length && posts.length > 0
                 }
-                className="h-4 w-4 text-admin-600 focus:ring-admin-500 border-gray-300 rounded"
+                className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
               />
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -112,20 +112,20 @@ function PostsList({ posts, onDelete, onPublishToggle }) {
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {posts.map((post) => (
-            <tr key={post.id} className="hover:bg-gray-50">
+            <tr key={post.id} className="hover:bg-gray-50 transition-colors">
               <td className="px-6 py-4 whitespace-nowrap">
                 <input
                   type="checkbox"
                   checked={selectedPosts.includes(post.id)}
                   onChange={() => handleSelectPost(post.id)}
-                  className="h-4 w-4 text-admin-600 focus:ring-admin-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
                 />
               </td>
               <td className="px-6 py-4">
                 <div className="flex flex-col">
                   <Link
                     to={`/posts/${post.id}`}
-                    className="text-sm font-medium text-gray-900 hover:text-admin-600"
+                    className="text-sm font-medium text-gray-900 hover:text-sky-600 transition-colors"
                   >
                     {post.title}
                   </Link>
@@ -160,7 +160,7 @@ function PostsList({ posts, onDelete, onPublishToggle }) {
                 <div className="flex justify-end space-x-3">
                   <Link
                     to={`/posts/${post.id}`}
-                    className="text-gray-600 hover:text-gray-900"
+                    className="text-gray-600 hover:text-gray-900 transition-colors"
                     title="View"
                   >
                     <svg
@@ -185,7 +185,7 @@ function PostsList({ posts, onDelete, onPublishToggle }) {
                   </Link>
                   <Link
                     to={`/posts/edit/${post.id}`}
-                    className="text-admin-600 hover:text-admin-900"
+                    className="text-sky-600 hover:text-sky-900 transition-colors"
                     title="Edit"
                   >
                     <svg
@@ -206,8 +206,8 @@ function PostsList({ posts, onDelete, onPublishToggle }) {
                     onClick={() => onPublishToggle(post.id, !post.published)}
                     className={
                       post.published
-                        ? "text-green-600 hover:text-green-900"
-                        : "text-gray-500 hover:text-gray-700"
+                        ? "text-green-600 hover:text-green-900 transition-colors"
+                        : "text-gray-500 hover:text-gray-700 transition-colors"
                     }
                     title={post.published ? "Unpublish" : "Publish"}
                   >
@@ -257,7 +257,7 @@ function PostsList({ posts, onDelete, onPublishToggle }) {
                         onDelete(post.id);
                       }
                     }}
-                    className="text-red-600 hover:text-red-900"
+                    className="text-red-600 hover:text-red-900 transition-colors"
                     title="Delete"
                   >
                     <svg
@@ -303,7 +303,10 @@ function PostsList({ posts, onDelete, onPublishToggle }) {
             Get started by creating a new post.
           </p>
           <div className="mt-6">
-            <Link to="/posts/create" className="btn-primary py-2 px-4">
+            <Link
+              to="/posts/create"
+              className="btn-primary py-2 px-4 inline-flex items-center"
+            >
               <svg
                 className="-ml-1 mr-2 h-5 w-5"
                 xmlns="http://www.w3.org/2000/svg"

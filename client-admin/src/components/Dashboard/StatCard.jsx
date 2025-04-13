@@ -31,12 +31,10 @@ function StatCard({ title, value, icon, trend, trendValue }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white rounded-lg shadow p-6 transition-all duration-200 hover:shadow-md">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-gray-500 text-sm font-medium">{title}</h3>
-        <div className="p-2 rounded-full bg-admin-100 text-admin-600">
-          {icon}
-        </div>
+        <div className="p-2 rounded-full bg-sky-100 text-sky-600">{icon}</div>
       </div>
       <div className="flex flex-col">
         <div className="text-3xl font-bold text-gray-900">{value}</div>
