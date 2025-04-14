@@ -1,6 +1,13 @@
 // App.jsx - Main component
-import { BrowserRouter, Routes, Route, Link, NavLink } from "react-router-dom";
-import { useState } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link,
+  NavLink,
+  useLocation,
+} from "react-router-dom";
+import { useState, useEffect } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./components/PrivateRoute";
 import Home from "./pages/Home";
@@ -15,6 +22,16 @@ import UserPosts from "./pages/UserPosts";
 import UserProfile from "./pages/UserProfile"; // Import UserProfile
 import EditPost from "./pages/EditPost"; // Import EditPost
 import { useAuth } from "./contexts/AuthContext";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 // NavBar component with conditional rendering based on auth state
 function NavBar() {
@@ -81,7 +98,7 @@ function NavBar() {
                 </NavLink>
                 <div className="relative group">
                   <button className="flex items-center space-x-1 text-gray-300 hover:text-white pb-2 pt-2">
-                    <div className="h-8 w-8 rounded-full bg-sky-700 flex items-center justify-center text-white font-medium">
+                    <div className="h-8 w-8 rounded-full bg-sky-600 flex items-center justify-center text-white font-medium">
                       {currentUser.name
                         ? currentUser.name.charAt(0).toUpperCase()
                         : currentUser.email.charAt(0).toUpperCase()}
@@ -266,7 +283,7 @@ function AppContent() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <NavBar />
-
+      <ScrollToTop />
       <main className="flex-grow">
         <Routes>
           {/* Public Routes */}

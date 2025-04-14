@@ -169,7 +169,7 @@ function CreatePost() {
                   id="published"
                   checked={published}
                   onChange={handlePublishedToggle}
-                  className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded transition duration-200"
+                  className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded transition duration-200 accent-sky-600 hover:accent-sky-700"
                 />
                 <label
                   htmlFor="published"
@@ -197,7 +197,7 @@ function CreatePost() {
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex justify-center py-2.5 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition duration-200"
+                className="inline-flex justify-center py-2.5 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 duration-200"
               >
                 {loading ? (
                   <>

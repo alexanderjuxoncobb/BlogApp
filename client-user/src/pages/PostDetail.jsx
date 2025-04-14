@@ -275,7 +275,7 @@ function PostDetail() {
 
             <div className="flex items-center text-gray-600 mb-6">
               <div className="flex items-center">
-                <div className="h-10 w-10 rounded-full bg-sky-700 flex items-center justify-center text-white font-medium mr-3">
+                <div className="h-10 w-10 rounded-full bg-sky-600 flex items-center justify-center text-white font-medium mr-3">
                   {author
                     ? author.name?.charAt(0).toUpperCase()
                     : post.authorId.toString().charAt(0)}
@@ -327,7 +327,7 @@ function PostDetail() {
 
                 <button
                   onClick={handleDeletePost}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 hover:border-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                 >
                   <svg
                     className="h-4 w-4 mr-2"

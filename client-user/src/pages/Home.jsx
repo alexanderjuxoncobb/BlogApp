@@ -73,7 +73,7 @@ function Home() {
                 <div className="flex flex-wrap gap-4">
                   <Link
                     to="/create-post"
-                    className="bg-sky-500 hover:bg-sky-600 text-white font-medium py-3 px-6 rounded-md transition-colors"
+                    className="bg-sky-600 hover:bg-sky-700 text-white font-medium py-3 px-6 rounded-md transition-colors"
                   >
                     Create New Post
                   </Link>
