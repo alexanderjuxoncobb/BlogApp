@@ -8,6 +8,50 @@ import { authenticateJWT } from "../middleware/authMiddleware.js"; // Verify thi
 
 const router = express.Router();
 
+router.get("/", async (req, res) => {
+  const cacheKey = `top_20_comments`;
+
+  try {
+    const forceRefresh = req.query.refresh === "true";
+    const cachedComments = !forceRefresh ? commentsCache.get(cacheKey) : null;
+
+    if (cachedComments) {
+      console.log(`Serving top 20 comments from cache`);
+      return res.json({
+        comments: cachedComments,
+      });
+    }
+
+    console.log(`Fetching top 20 comments from database`);
+    const comments = await prisma.comment.findMany({
+      select: {
+        id: true,
+        name: true, // Keep selecting name
+        content: true,
+        postId: true,
+        createdAt: true,
+        // >>> CHANGE 2: Select the userId (will be null for old comments) <<<
+        userId: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 20,
+    });
+
+    commentsCache.set(cacheKey, comments);
+
+    res.json({
+      comments: comments,
+    });
+  } catch (error) {
+    // Log the actual error on the server for debugging
+    console.error(`Error fetching comments`, error);
+    // Send generic error to client
+    res.status(500).json({ error: "Failed to fetch comments" });
+  }
+});
+
 // GET /:postId - Fetch comments for a post
 router.get("/:postId", async (req, res) => {
   const postIdParam = req.params.postId;

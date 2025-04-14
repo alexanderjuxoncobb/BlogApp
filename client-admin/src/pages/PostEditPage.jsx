@@ -1,7 +1,9 @@
+// client-admin/src/pages/PostEditPage.jsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "../components/AdminLayout";
 import PostEditor from "../components/Posts/PostEditor";
+import { getPostById, createPost, updatePost } from "../utils/api";
 
 function PostEditPage() {
   const { id } = useParams();
@@ -22,25 +24,8 @@ function PostEditPage() {
       setError(null);
 
       try {
-        // In a real implementation, you would fetch this data from your API
-        // For now, we'll use mock data to demonstrate the UI
-
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Mock post data - in a real app, you'd fetch based on the id
-        const mockPost = {
-          id: parseInt(id),
-          title: "Sample Post Title",
-          content:
-            "This is a sample post content that would be fetched from the API in a real application. The editor will allow you to modify this content and update it.",
-          published: true,
-          authorId: 1,
-          author: { name: "John Doe", email: "john@example.com" },
-          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-        };
-
-        setPost(mockPost);
+        const response = await getPostById(id);
+        setPost(response.post);
       } catch (error) {
         console.error("Error fetching post:", error);
         setError("Failed to load post. Please try again later.");
@@ -54,11 +39,13 @@ function PostEditPage() {
 
   const handleSave = async (postData) => {
     try {
-      // In a real implementation, you would call your API here
-      console.log("Saving post:", postData);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (id) {
+        // Update existing post
+        await updatePost(id, postData);
+      } else {
+        // Create new post
+        await createPost(postData);
+      }
 
       // Redirect back to posts list after successful save
       navigate("/posts");

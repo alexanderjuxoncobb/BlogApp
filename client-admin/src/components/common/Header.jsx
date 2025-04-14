@@ -36,7 +36,7 @@ function Header() {
               ? currentAdmin.name.charAt(0).toUpperCase()
               : currentAdmin?.email.charAt(0).toUpperCase()}
           </div>
-          <span className="hidden md:inline-block font-medium text-gray-700 group-hover:text-gray-900">
+          <span className="hidden md:inline-block font-medium text-gray-700 group-hover:text-gray-900 truncate max-w-[150px]">
             {currentAdmin?.name || currentAdmin?.email}
           </span>
           <svg
@@ -57,10 +57,12 @@ function Header() {
         </button>
 
         {dropdownOpen && (
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
+          <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
             <div className="border-b border-gray-100 px-4 py-2 text-sm text-gray-700">
               Signed in as <br />
-              <span className="font-semibold">{currentAdmin?.email}</span>
+              <span className="font-semibold break-words">
+                {currentAdmin?.email}
+              </span>
             </div>
             <button
               onClick={logout}

@@ -1,3 +1,4 @@
+// client-admin/src/App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AdminAuthProvider } from "./contexts/AdminAuthContext";
 import AdminPrivateRoute from "./components/AdminPrivateRoute";
@@ -6,6 +7,7 @@ import AdminPrivateRoute from "./components/AdminPrivateRoute";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 import PostsPage from "./pages/PostsPage";
+import PostDetailPage from "./pages/PostDetailPage";
 import PostEditPage from "./pages/PostEditPage";
 import UsersPage from "./pages/UsersPage";
 import CommentsPage from "./pages/CommentsPage";
@@ -33,6 +35,16 @@ function App() {
             element={
               <AdminPrivateRoute>
                 <PostsPage />
+              </AdminPrivateRoute>
+            }
+          />
+
+          {/* New route for viewing a single post */}
+          <Route
+            path="/posts/:id"
+            element={
+              <AdminPrivateRoute>
+                <PostDetailPage />
               </AdminPrivateRoute>
             }
           />

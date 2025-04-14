@@ -1,6 +1,8 @@
+// client-admin/src/pages/CommentsPage.jsx
 import { useState, useEffect } from "react";
 import AdminLayout from "../components/AdminLayout";
 import CommentsManager from "../components/Comments/CommentsManager";
+import { getAllComments, deleteComment } from "../utils/api";
 
 function CommentsPage() {
   const [comments, setComments] = useState([]);
@@ -15,63 +17,16 @@ function CommentsPage() {
       setError(null);
 
       try {
-        // In a real implementation, you would fetch this data from your API
-        // For now, we'll use mock data to demonstrate the UI
+        // Since we don't have a direct endpoint for all comments,
+        // we're using a hack by passing null as the postId
+        const response = await getAllComments();
+        const commentsWithPostDetails = response.comments.map((comment) => ({
+          ...comment,
+          postTitle: comment.post?.title || `Post #${comment.postId}`,
+        }));
 
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Mock comments data
-        const mockComments = [
-          {
-            id: 1,
-            content:
-              "This is a really helpful article. Thanks for sharing your knowledge!",
-            postId: 1,
-            postTitle: "Getting Started with React",
-            name: "User123",
-            createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-          },
-          {
-            id: 2,
-            content:
-              "I've been struggling with this concept for a while. Your explanation made it much clearer.",
-            postId: 1,
-            postTitle: "Getting Started with React",
-            name: "TechEnthusiast",
-            createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
-          },
-          {
-            id: 3,
-            content:
-              "Do you have any recommendations for more advanced reading on this topic?",
-            postId: 2,
-            postTitle: "JavaScript Tips and Tricks",
-            name: "LearningDev",
-            createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-          },
-          {
-            id: 4,
-            content:
-              "I noticed a small error in the code example. In the second function, shouldn't the loop start at 0 instead of 1?",
-            postId: 2,
-            postTitle: "JavaScript Tips and Tricks",
-            name: "CodeReviewer",
-            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-          },
-          {
-            id: 5,
-            content:
-              "Great post! I'm looking forward to more content like this.",
-            postId: 4,
-            postTitle: "Building REST APIs with Node.js",
-            name: "BackendDev",
-            createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-          },
-        ];
-
-        setComments(mockComments);
-        setFilteredComments(mockComments);
+        setComments(commentsWithPostDetails);
+        setFilteredComments(commentsWithPostDetails);
       } catch (error) {
         console.error("Error fetching comments:", error);
         setError("Failed to fetch comments. Please try again later.");
@@ -99,13 +54,18 @@ function CommentsPage() {
     }
   }, [searchTerm, comments]);
 
-  const handleDelete = (commentId) => {
-    // In a real application, this would call an API to delete the comment
-    setComments(comments.filter((comment) => comment.id !== commentId));
+  const handleDelete = async (commentId) => {
+    try {
+      await deleteComment(commentId);
+      setComments(comments.filter((comment) => comment.id !== commentId));
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      alert("Failed to delete comment. Please try again.");
+    }
   };
 
   const handleApprove = (commentId) => {
-    // In a real application, this would call an API to approve the comment
+    // This functionality might not be implemented in the backend yet
     setComments(
       comments.map((comment) =>
         comment.id === commentId ? { ...comment, approved: true } : comment

@@ -14,3 +14,11 @@ then build and set up the admin side of the app!
 
 
 
+bugs:
+
+all posts only published (done)
+can't create post in admin (done)
+can't unpublish in postDetail (done)
+can't view unpublished posts as an admin (auth off)
+styling of course
+chart is not for my data 

@@ -5,10 +5,11 @@ import {
   authenticateJWT,
   optionalAuthenticateJWT,
 } from "../middleware/authMiddleware.js";
+import { isAdmin } from "../middleware/adminMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.get("/", optionalAuthenticateJWT, async (req, res) => {
   try {
     const forceRefresh = req.query.refresh === "true";
     const cacheKey = "all_posts";
@@ -24,10 +25,10 @@ router.get("/", async (req, res) => {
     }
 
     console.log("Fetching posts from database");
+    const whereClause = req.user?.role === "ADMIN" ? {} : { published: true };
+
     const posts = await prisma.post.findMany({
-      where: {
-        published: true,
-      },
+      where: whereClause,
       select: {
         id: true,
         title: true,
@@ -122,6 +123,7 @@ router.get("/:id", optionalAuthenticateJWT, async (req, res) => {
   try {
     const postId = parseInt(req.params.id);
     const userId = req.user?.id; // Optional chaining for safe access
+    const userAdmin = req.user?.role === "ADMIN" ? true : false;
 
     if (isNaN(postId)) {
       return res.status(400).json({
@@ -137,7 +139,7 @@ router.get("/:id", optionalAuthenticateJWT, async (req, res) => {
     // Check cached post permissions
     if (cachedPost) {
       const isAuthor = userId === cachedPost.authorId;
-      if (!cachedPost.published && !isAuthor) {
+      if (!cachedPost.published && !(isAuthor || userAdmin)) {
         return res.status(404).json({
           success: false,
           message: "Post not found",
@@ -146,27 +148,42 @@ router.get("/:id", optionalAuthenticateJWT, async (req, res) => {
       return res.json({ success: true, post: cachedPost });
     }
 
-    // Fetch post from database with additional where clause
-    const post = await prisma.post.findUnique({
-      where: {
-        id: postId,
-        // Add database-level filtering
-        OR: [
-          { published: true },
-          { authorId: userId || -1 }, // -1 ensures no match if user not logged in
-        ],
-      },
-      include: {
-        author: { select: { id: true, name: true, email: true } },
-        comments: { orderBy: { createdAt: "desc" } },
-      },
-    });
-
-    if (!post) {
-      return res.status(404).json({
-        success: false,
-        message: "Post not found",
+    // If user is admin, they can see any post
+    if (userAdmin) {
+      const post = await prisma.post.findUnique({
+        where: { id: postId },
+        include: {
+          author: { select: { id: true, name: true, email: true } },
+          comments: { orderBy: { createdAt: "desc" } },
+        },
       });
+
+      if (post) {
+        return res.json({ success: true, post });
+      }
+    } else {
+      // Fetch post from database with additional where clause
+      const post = await prisma.post.findFirst({
+        where: {
+          id: postId,
+          // Add database-level filtering
+          OR: [
+            { published: true },
+            { authorId: userId || -1 }, // -1 ensures no match if user not logged in
+          ],
+        },
+        include: {
+          author: { select: { id: true, name: true, email: true } },
+          comments: { orderBy: { createdAt: "desc" } },
+        },
+      });
+
+      if (!post) {
+        return res.status(404).json({
+          success: false,
+          message: "Post not found",
+        });
+      }
     }
 
     // Store in cache with TTL
@@ -333,7 +350,7 @@ router.put("/:id", authenticateJWT, async (req, res) => {
       });
     }
 
-    if (existingPost.authorId !== userId) {
+    if (existingPost.authorId !== userId && req.user.role !== "ADMIN") {
       return res.status(403).json({
         success: false,
         message: "You don't have permission to update this post",

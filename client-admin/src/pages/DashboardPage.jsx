@@ -1,8 +1,10 @@
+// client-admin/src/pages/DashboardPage.jsx
 import { useState, useEffect } from "react";
 import AdminLayout from "../components/AdminLayout";
 import StatCard from "../components/Dashboard/StatCard";
 import PostsChart from "../components/Dashboard/PostsChart";
 import RecentActivity from "../components/Dashboard/RecentActivity";
+import { getDashboardStats, getPosts } from "../utils/api";
 
 function DashboardPage() {
   const [stats, setStats] = useState({
@@ -16,62 +18,116 @@ function DashboardPage() {
   const [error, setError] = useState(null);
   const [chartData, setChartData] = useState([]);
 
+  // Helper functions defined outside of any loops for better performance
+  const formatDate = (date) => {
+    return date.toISOString().split("T")[0];
+  };
+
+  const formatDisplayDate = (date) => {
+    const month = date.toLocaleString("default", { month: "short" });
+    return `${month} ${date.getDate()}`;
+  };
+
+  // Process posts to generate chart data (optimized with single pass)
+  const getLastSevenDaysData = (posts) => {
+    // Create a map for faster lookups
+    const postsByDate = {};
+    const result = [];
+    const today = new Date();
+
+    // Initialize the date buckets for last 7 days
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dateString = formatDate(date);
+      const displayDate = formatDisplayDate(date);
+
+      postsByDate[dateString] = { published: 0, draft: 0 };
+      result.push({
+        name: displayDate,
+        dateString,
+        published: 0,
+        draft: 0,
+      });
+    }
+
+    // Count posts with a single pass
+    if (posts && posts.length) {
+      posts.forEach((post) => {
+        if (!post.createdAt) return;
+
+        const postDate = formatDate(new Date(post.createdAt));
+        if (postsByDate[postDate]) {
+          if (post.published) {
+            postsByDate[postDate].published++;
+          } else {
+            postsByDate[postDate].draft++;
+          }
+        }
+      });
+    }
+
+    // Update the result array with the counts
+    result.forEach((item) => {
+      const counts = postsByDate[item.dateString];
+      if (counts) {
+        item.published = counts.published;
+        item.draft = counts.draft;
+      }
+      delete item.dateString; // Clean up the temporary property
+    });
+
+    return result;
+  };
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        // In a real implementation, you would fetch this data from your API
-        // For now, we'll use mock data to demonstrate the UI
+        // Make API calls in parallel for better performance
+        const [data, postsResponse] = await Promise.all([
+          getDashboardStats(),
+          getPosts(),
+        ]);
 
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const allPosts = postsResponse.posts || [];
 
-        // Mock stats data
+        // Set the stats from the response
         setStats({
-          totalPosts: 24,
-          totalUsers: 15,
-          totalComments: 48,
-          publishedPosts: 18,
+          totalPosts: data.stats.totalPosts,
+          totalUsers: data.stats.totalUsers,
+          totalComments: data.stats.totalComments,
+          publishedPosts: data.stats.publishedPosts,
         });
 
-        // Mock chart data
-        setChartData([
-          { name: "Jan", published: 4, draft: 2 },
-          { name: "Feb", published: 3, draft: 1 },
-          { name: "Mar", published: 2, draft: 3 },
-          { name: "Apr", published: 5, draft: 1 },
-          { name: "May", published: 4, draft: 2 },
-        ]);
+        // Process recent activity more efficiently
+        const recentActivities = [
+          // Process recent posts
+          ...(data.recentActivity.posts || []).map((post) => ({
+            type: post.published ? "post_updated" : "post_created",
+            message: `${post.published ? "Post updated" : "New post created"}: "${post.title}"`,
+            date: new Date(post.createdAt),
+            link: `/posts/${post.id}`,
+          })),
 
-        // Mock activity data
-        setActivities([
-          {
-            type: "post_created",
-            message: 'New post created: "Getting Started with React"',
-            date: new Date(Date.now() - 3600000),
-            link: "/posts/1",
-          },
-          {
+          // Process recent comments
+          ...(data.recentActivity.comments || []).map((comment) => ({
             type: "comment_added",
-            message: 'New comment by User123 on "JavaScript Tips and Tricks"',
-            date: new Date(Date.now() - 7200000),
-            link: "/posts/2",
-          },
-          {
-            type: "user_registered",
-            message: "New user registered: jane.doe@example.com",
-            date: new Date(Date.now() - 86400000),
-            link: "/users",
-          },
-          {
-            type: "post_updated",
-            message: 'Post updated: "Introduction to CSS Grid"',
-            date: new Date(Date.now() - 172800000),
-            link: "/posts/3",
-          },
-        ]);
+            message: `New comment by ${comment.name} on "${comment.post.title}"`,
+            date: new Date(comment.createdAt),
+            link: `/posts/${comment.post.id}`,
+          })),
+        ];
+
+        // Sort by date, newest first
+        recentActivities.sort((a, b) => b.date - a.date);
+        setActivities(recentActivities);
+
+        // Generate chart data
+        const chartDataArray = getLastSevenDaysData(allPosts);
+        setChartData(chartDataArray);
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
         setError("Failed to load dashboard data. Please try again later.");
@@ -81,7 +137,7 @@ function DashboardPage() {
     };
 
     fetchDashboardData();
-  }, []);
+  }, []); // Empty dependency array means this runs once on mount
 
   if (loading) {
     return (
@@ -146,7 +202,7 @@ function DashboardPage() {
               </svg>
             }
             trend="up"
-            trendValue="75% of total"
+            trendValue={`${Math.round((stats.publishedPosts / stats.totalPosts) * 100)}% of total`}
           />
           <StatCard
             title="Total Users"
@@ -185,8 +241,6 @@ function DashboardPage() {
                 />
               </svg>
             }
-            trend="up"
-            trendValue="12% increase"
           />
         </div>
 

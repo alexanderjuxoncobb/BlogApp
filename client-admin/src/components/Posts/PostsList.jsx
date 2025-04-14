@@ -1,8 +1,11 @@
+// client-admin/src/components/Posts/PostsList.jsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { togglePostPublish } from "../../utils/api"; // Import the API function
 
 function PostsList({ posts, onDelete, onPublishToggle }) {
   const [selectedPosts, setSelectedPosts] = useState([]);
+  const [loading, setLoading] = useState({}); // Track loading state per post
 
   // Format date to a readable string
   const formatDate = (dateString) => {
@@ -37,9 +40,40 @@ function PostsList({ posts, onDelete, onPublishToggle }) {
     }
   };
 
-  const handleBulkPublish = (publish) => {
-    selectedPosts.forEach((postId) => onPublishToggle(postId, publish));
+  const handleBulkPublish = async (publish) => {
+    for (const postId of selectedPosts) {
+      try {
+        await togglePostPublish(postId, publish);
+        onPublishToggle(postId, publish);
+      } catch (error) {
+        console.error(
+          `Error toggling publish status for post ${postId}:`,
+          error
+        );
+        alert(`Failed to update post ${postId}: ${error.message}`);
+      }
+    }
     setSelectedPosts([]);
+  };
+
+  // Handle single post publish toggle
+  const handlePublishToggle = async (postId, currentStatus) => {
+    try {
+      // Set loading state for this specific post
+      setLoading((prev) => ({ ...prev, [postId]: true }));
+
+      // Toggle the publish status
+      await togglePostPublish(postId, !currentStatus);
+
+      // Call the parent's callback function to update state
+      onPublishToggle(postId, !currentStatus);
+    } catch (error) {
+      console.error(`Error toggling publish status for post ${postId}:`, error);
+      alert(`Failed to update post status: ${error.message}`);
+    } finally {
+      // Clear loading state
+      setLoading((prev) => ({ ...prev, [postId]: false }));
+    }
   };
 
   const truncateContent = (content, maxLength = 100) => {
@@ -203,15 +237,37 @@ function PostsList({ posts, onDelete, onPublishToggle }) {
                     </svg>
                   </Link>
                   <button
-                    onClick={() => onPublishToggle(post.id, !post.published)}
-                    className={
+                    onClick={() => handlePublishToggle(post.id, post.published)}
+                    disabled={loading[post.id]}
+                    className={`${
                       post.published
-                        ? "text-green-600 hover:text-green-900 transition-colors"
-                        : "text-gray-500 hover:text-gray-700 transition-colors"
-                    }
+                        ? "text-green-600 hover:text-green-900"
+                        : "text-gray-500 hover:text-gray-700"
+                    } transition-colors`}
                     title={post.published ? "Unpublish" : "Publish"}
                   >
-                    {post.published ? (
+                    {loading[post.id] ? (
+                      <svg
+                        className="animate-spin h-5 w-5"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                    ) : post.published ? (
                       <svg
                         className="w-5 h-5"
                         fill="none"
@@ -227,22 +283,24 @@ function PostsList({ posts, onDelete, onPublishToggle }) {
                       </svg>
                     ) : (
                       <svg
-                        className="w-5 h-5"
+                        className="w-4.5 h-4.5"
                         fill="none"
                         viewBox="0 0 24 24"
-                        stroke="currentColor"
+                        stroke="black"
                       >
-                        <path
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="10"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth="2"
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                         />
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth="2"
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          d="M12 8v4m0 0v4m0-4h4m-4 0H8"
                         />
                       </svg>
                     )}

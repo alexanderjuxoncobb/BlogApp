@@ -2,6 +2,8 @@ import express from "express";
 import prisma from "../utils/prisma.js";
 import { usersCache } from "../utils/cache.js";
 import { authenticateJWT } from "../middleware/authMiddleware.js";
+import { isAdmin } from "../middleware/adminMiddleware.js";
+
 import bcrypt from "bcrypt";
 
 const router = express.Router();
@@ -157,7 +159,6 @@ router.get("/profile", authenticateJWT, async (req, res) => {
       },
     });
 
-
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -291,43 +292,47 @@ router.delete("/account", authenticateJWT, async (req, res) => {
   }
 });
 
+// server/routes/users.js
 router.delete("/:id", async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
 
-    if (isNaN(userId)) {
-      return res.status(400).json({
-        message: "Invalid user ID",
+    // Start a transaction to handle all related deletions
+    await prisma.$transaction(async (tx) => {
+      // Delete user's comments first
+      await tx.comment.deleteMany({
+        where: { userId },
       });
-    }
 
-    const existingUser = await prisma.user.findUnique({
-      where: { id: userId },
+      // Get all posts by this user
+      const userPosts = await tx.post.findMany({
+        where: { authorId: userId },
+        select: { id: true },
+      });
+
+      // Delete comments on these posts
+      if (userPosts.length > 0) {
+        const postIds = userPosts.map((post) => post.id);
+        await tx.comment.deleteMany({
+          where: { postId: { in: postIds } },
+        });
+      }
+
+      // Delete the posts
+      await tx.post.deleteMany({
+        where: { authorId: userId },
+      });
+
+      // Finally delete the user
+      await tx.user.delete({
+        where: { id: userId },
+      });
     });
 
-    if (!existingUser) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
-
-    await prisma.user.delete({
-      where: { id: userId },
-    });
-
-    // Invalidate cache after deletion
     usersCache.del("all_users");
-
     res.status(204).send();
   } catch (error) {
-    console.error("Error deleting user:", error);
-
-    if (error.code === "P2025") {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
-
+    console.error("Error details:", error);
     res.status(500).json({
       message: "Failed to delete user",
       error: error.message,

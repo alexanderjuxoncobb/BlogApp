@@ -1,6 +1,9 @@
+// client-admin/src/pages/UsersPage.jsx
+
 import { useState, useEffect } from "react";
 import AdminLayout from "../components/AdminLayout";
 import UsersList from "../components/Users/UsersList";
+import { getUsers, changeUserRole, deleteUser } from "../utils/api";
 
 function UsersPage() {
   const [users, setUsers] = useState([]);
@@ -10,71 +13,29 @@ function UsersPage() {
   const [filteredUsers, setFilteredUsers] = useState([]);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        // In a production environment, this would be an API call
-        // For now, we'll simulate with mock data
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Mock users data
-        const mockUsers = [
-          {
-            id: 1,
-            name: "John Doe",
-            email: "john@example.com",
-            role: "ADMIN",
-            postCount: 10,
-            createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000), // 60 days ago
-          },
-          {
-            id: 2,
-            name: "Jane Smith",
-            email: "jane@example.com",
-            role: "USER",
-            postCount: 5,
-            createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000), // 45 days ago
-          },
-          {
-            id: 3,
-            name: "Alice Johnson",
-            email: "alice@example.com",
-            role: "USER",
-            postCount: 3,
-            createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
-          },
-          {
-            id: 4,
-            name: "Bob Wilson",
-            email: "bob@example.com",
-            role: "USER",
-            postCount: 0,
-            createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // 15 days ago
-          },
-          {
-            id: 5,
-            name: "Carol Martinez",
-            email: "carol@example.com",
-            role: "USER",
-            postCount: 2,
-            createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-          },
-        ];
-
-        setUsers(mockUsers);
-        setFilteredUsers(mockUsers);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        setError("Failed to fetch users. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchUsers();
   }, []);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await getUsers();
+      const usersWithPostCount = response.users.map((user) => ({
+        ...user,
+        postCount: 0, // Default to 0 until we get actual post counts
+      }));
+
+      setUsers(usersWithPostCount);
+      setFilteredUsers(usersWithPostCount);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setError("Failed to fetch users. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     // Filter users when search term changes
@@ -91,18 +52,44 @@ function UsersPage() {
     }
   }, [searchTerm, users]);
 
-  const handleRoleChange = (userId, newRole) => {
-    // In a real application, this would call an API to update the user role
-    setUsers(
-      users.map((user) =>
-        user.id === userId ? { ...user, role: newRole } : user
-      )
-    );
+  const handleRoleChange = async (userId, newRole) => {
+    try {
+      await changeUserRole(userId, newRole);
+
+      // Update the user in the state
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, role: newRole } : user
+        )
+      );
+    } catch (error) {
+      console.error("Error changing user role:", error);
+      alert(`Failed to update user role: ${error.message}`);
+    }
   };
 
-  const handleDelete = (userId) => {
-    // In a real application, this would call an API to delete the user
-    setUsers(users.filter((user) => user.id !== userId));
+  const handleDelete = async (userId) => {
+    try {
+      // Show loading state or disable UI if needed
+
+      // Call the deleteUser API function
+      await deleteUser(userId);
+
+      // If successful, update the state to remove the deleted user
+      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+
+      // Also update filtered users
+      setFilteredUsers((prevFilteredUsers) =>
+        prevFilteredUsers.filter((user) => user.id !== userId)
+      );
+
+      // Show success message if needed
+      console.log(`User ${userId} deleted successfully`);
+    } catch (error) {
+      // Show error message
+      console.error("Error deleting user:", error);
+      alert(`Failed to delete user: ${error.message}`);
+    }
   };
 
   const handleSearch = (e) => {

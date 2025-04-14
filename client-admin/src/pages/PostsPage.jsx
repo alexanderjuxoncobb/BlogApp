@@ -1,7 +1,9 @@
+// client-admin/src/pages/PostsPage.jsx
 import { useState, useEffect } from "react";
 import AdminLayout from "../components/AdminLayout";
 import PostsList from "../components/Posts/PostsList";
 import PostFilters from "../components/Posts/PostFilters";
+import { getPosts, deletePost, togglePostPublish } from "../utils/api";
 
 function PostsPage() {
   const [posts, setPosts] = useState([]);
@@ -16,66 +18,9 @@ function PostsPage() {
       setError(null);
 
       try {
-        // In a production environment, this would be an API call
-        // For now, we'll simulate with mock data
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Mock posts data
-        const mockPosts = [
-          {
-            id: 1,
-            title: "Getting Started with React",
-            content:
-              "React is a JavaScript library for building user interfaces. It's maintained by Facebook and a community of individual developers and companies.",
-            published: true,
-            authorId: 1,
-            author: { name: "John Doe", email: "john@example.com" },
-            createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-          },
-          {
-            id: 2,
-            title: "JavaScript Tips and Tricks",
-            content:
-              "JavaScript is a versatile language used for web development. Here are some useful tips and tricks to make your code more efficient.",
-            published: true,
-            authorId: 2,
-            author: { name: "Jane Smith", email: "jane@example.com" },
-            createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-          },
-          {
-            id: 3,
-            title: "Introduction to CSS Grid",
-            content:
-              "CSS Grid Layout is a two-dimensional layout system designed for the web. It allows you to lay out content in rows and columns.",
-            published: false,
-            authorId: 1,
-            author: { name: "John Doe", email: "john@example.com" },
-            createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-          },
-          {
-            id: 4,
-            title: "Building REST APIs with Node.js",
-            content:
-              "Learn how to build RESTful APIs with Node.js, Express, and MongoDB. This tutorial covers all the basics you need to get started.",
-            published: true,
-            authorId: 3,
-            author: { name: "Alice Johnson", email: "alice@example.com" },
-            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-          },
-          {
-            id: 5,
-            title: "TypeScript for React Developers",
-            content:
-              "TypeScript adds static type definitions to JavaScript, making your code more predictable and easier to debug. Here's how to use it with React.",
-            published: false,
-            authorId: 2,
-            author: { name: "Jane Smith", email: "jane@example.com" },
-            createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-          },
-        ];
-
-        setPosts(mockPosts);
-        applyFilters(mockPosts, filters);
+        const response = await getPosts();
+        setPosts(response.posts || []);
+        applyFilters(response.posts || [], filters);
       } catch (error) {
         console.error("Error fetching posts:", error);
         setError("Failed to fetch posts. Please try again later.");
@@ -118,18 +63,28 @@ function PostsPage() {
     setFilters(newFilters);
   };
 
-  const handleDelete = (postId) => {
-    // In a real application, this would call an API to delete the post
-    setPosts(posts.filter((post) => post.id !== postId));
+  const handleDelete = async (postId) => {
+    try {
+      await deletePost(postId);
+      setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Failed to delete post. Please try again.");
+    }
   };
 
-  const handlePublishToggle = (postId, newPublishedStatus) => {
-    // In a real application, this would call an API to update the post's published status
-    setPosts(
-      posts.map((post) =>
-        post.id === postId ? { ...post, published: newPublishedStatus } : post
-      )
-    );
+  const handlePublishToggle = async (postId, newPublishedStatus) => {
+    try {
+      await togglePostPublish(postId, newPublishedStatus);
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId ? { ...post, published: newPublishedStatus } : post
+        )
+      );
+    } catch (error) {
+      console.error("Error toggling post published status:", error);
+      alert("Failed to update post status. Please try again.");
+    }
   };
 
   return (
