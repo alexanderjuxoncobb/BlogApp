@@ -30,10 +30,7 @@ function NavBar() {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
-          <Link
-            to="/"
-            className="text-2xl font-bold text-sky-400"
-          >
+          <Link to="/" className="text-2xl font-bold text-sky-400">
             BlogApp
           </Link>
 
@@ -61,11 +58,24 @@ function NavBar() {
               About
             </NavLink>
 
+            {currentUser && (
+              <NavLink
+                to="/my-posts"
+                className={({ isActive }) =>
+                  isActive
+                    ? "text-sky-400 font-medium"
+                    : "text-gray-300 hover:text-white transition-colors"
+                }
+              >
+                My Posts
+              </NavLink>
+            )}
+
             {currentUser ? (
               <>
                 <NavLink
                   to="/create-post"
-                  className="bg-sky-500 hover:bg-sky-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                  className="bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
                 >
                   Write Post
                 </NavLink>
@@ -92,12 +102,6 @@ function NavBar() {
                   </button>
                   <div className="absolute right-0 top-full w-48 bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
                     <Link
-                      to="/my-posts"
-                      className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
-                    >
-                      My Posts
-                    </Link>
-                    <Link
                       to="/profile" // Link already exists
                       className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
                     >
@@ -122,7 +126,7 @@ function NavBar() {
                 </NavLink>
                 <NavLink
                   to="/register"
-                  className="bg-sky-500 hover:bg-sky-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                  className="bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
                 >
                   Sign Up
                 </NavLink>
@@ -188,6 +192,20 @@ function NavBar() {
               About
             </NavLink>
 
+            {currentUser && (
+              <NavLink
+                to="/my-posts"
+                className={({ isActive }) =>
+                  `block py-2 px-3 rounded ${
+                    isActive ? "bg-gray-800 text-sky-400" : "text-gray-300"
+                  }`
+                }
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                My Posts
+              </NavLink>
+            )}
+
             {currentUser ? (
               <>
                 <NavLink
@@ -196,17 +214,6 @@ function NavBar() {
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Write Post
-                </NavLink>
-                <NavLink
-                  to="/my-posts"
-                  className={({ isActive }) =>
-                    `block py-2 px-3 rounded ${
-                      isActive ? "bg-gray-800 text-sky-400" : "text-gray-300"
-                    }`
-                  }
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  My Posts
                 </NavLink>
                 <NavLink
                   to="/profile" // Link already exists

@@ -22,3 +22,8 @@ can't unpublish in postDetail (done)
 can't view unpublished posts as an admin (auth off)
 styling of course (done)
 chart is not for my data (done) 
+
+
+make the delete button that red writing across all 
+also ensure the create post and write post ahs consistent styling. like the colours are off etc.
+upload to cloud 

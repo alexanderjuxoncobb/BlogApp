@@ -89,7 +89,7 @@ function CommentsPage() {
               placeholder="Search comments..."
               value={searchTerm}
               onChange={handleSearch}
-              className="rounded-md border-gray-300 shadow-sm focus:border-admin-600 focus:ring focus:ring-admin-500 focus:ring-opacity-50"
+              className="rounded-md border-gray-300 shadow-sm focus:border-admin-600 focus:ring focus:ring-admin-500 focus:ring-opacity-50 pl-2"
             />
             {searchTerm && (
               <button
