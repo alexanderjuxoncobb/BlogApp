@@ -62,7 +62,7 @@ function PublishToggle({ postId, initialStatus, onToggleSuccess }) {
   };
 
   return (
-    <div className="relative inline-block">
+    <div className="flex items-center">
       <button
         onClick={togglePublishStatus}
         // Disable *only* while the fetch is actually in progress to prevent rapid clicks

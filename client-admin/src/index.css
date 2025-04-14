@@ -41,6 +41,10 @@
   --shadow-card:
     0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
+/* 
+* {
+  border: solid 1px red
+} */
 
 :root {
   font-family:
@@ -302,7 +306,9 @@ body {
   align-items: center;
   padding: 0.75rem 1rem;
   color: #d1d5db; /* gray-300 */
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .sidebar-nav-item:hover {

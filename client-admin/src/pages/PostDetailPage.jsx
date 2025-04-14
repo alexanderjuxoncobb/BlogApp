@@ -4,6 +4,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import AdminLayout from "../components/AdminLayout";
 import { getPostById, deletePost, togglePostPublish } from "../utils/api";
 import { formatDate } from "../utils/helpers";
+import PublishToggle from "../components/Posts/PublishToggle";
 
 function PostDetailPage() {
   const { id } = useParams();
@@ -47,8 +48,6 @@ function PostDetailPage() {
       alert("Failed to delete post. Please try again.");
     }
   };
-
-  // client-admin/src/pages/PostsPage.jsx (update just the handlePublishToggle function)
 
   const handlePublishToggle = async () => {
     try {
@@ -111,7 +110,24 @@ function PostDetailPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">{post.title}</h1>
+          <div className="flex items-center">
+            {" "}
+            {/* This wrapper ensures vertical alignment */}
+            <h1 className="text-2xl font-bold text-gray-900 my-auto">
+              {post.title}
+            </h1>
+            <div className="ml-4 flex-shrink-0 my-auto">
+              {" "}
+              {/* my-auto centers vertically */}
+              <PublishToggle
+                postId={parseInt(id)}
+                initialStatus={post.published}
+                onToggleSuccess={(postId, newStatus) => {
+                  setPost({ ...post, published: newStatus });
+                }}
+              />
+            </div>
+          </div>
           <div className="flex space-x-3">
             <Link
               to={`/posts/edit/${id}`}
@@ -132,77 +148,6 @@ function PostDetailPage() {
               </svg>
               Edit
             </Link>
-            <button
-              onClick={handlePublishToggle}
-              disabled={publishLoading}
-              className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                publishLoading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : post.published
-                    ? "bg-gray-600 hover:bg-gray-700"
-                    : "bg-green-600 hover:bg-green-700"
-              }`}
-            >
-              {publishLoading ? (
-                <>
-                  <svg
-                    className="animate-spin -ml-1 mr-2 h-5 w-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Updating...
-                </>
-              ) : post.published ? (
-                <>
-                  <svg
-                    className="-ml-1 mr-2 h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-                    />
-                  </svg>
-                  Unpublish
-                </>
-              ) : (
-                <>
-                  <svg
-                    className="-ml-1 mr-2 h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Publish
-                </>
-              )}
-            </button>
             <button
               onClick={handleDelete}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700"

@@ -307,7 +307,7 @@ function PostDetail() {
               <div className="flex flex-wrap space-x-3 mb-6">
                 <button
                   onClick={() => navigate(`/edit-post/${id}`)}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
                 >
                   <svg
                     className="h-4 w-4 mr-2"

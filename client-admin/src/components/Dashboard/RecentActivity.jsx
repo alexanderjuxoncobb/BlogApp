@@ -120,14 +120,14 @@ function RecentActivity({ activities }) {
               {getIcon(activity.type)}
               <div className="ml-4">
                 <p className="text-sm text-gray-800">{activity.message}</p>
-                <div className="flex items-center mt-1">
-                  <p className="text-xs text-gray-500">
+                <div className="flex items-center space-x-3 -mt-1">
+                  <p className="text-xs text-gray-500 my-auto">
                     {formatDate(activity.date)}
                   </p>
                   {activity.link && (
                     <Link
                       to={activity.link}
-                      className="ml-3 text-xs text-sky-600 hover:text-sky-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="text-xs text-sky-600 hover:text-sky-800 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       View details →
                     </Link>

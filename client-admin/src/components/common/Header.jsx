@@ -20,8 +20,10 @@ function Header() {
 
   return (
     <header className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-800">{pageTitle()}</h1>
+      <div className="relative h-full flex items-center">
+        <h1 className="absolute left-1/2 top-1/2  -translate-y-1/2 text-xl font-semibold text-gray-800">
+          {pageTitle()}
+        </h1>
       </div>
 
       <div className="relative">
