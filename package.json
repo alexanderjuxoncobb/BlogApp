@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "cd server && npx prisma generate && npx prisma migrate deploy",
+    "build": "echo 'Building client-user...' && cd client-user && npm install && npm run build && cd .. && echo 'Building client-admin...' && cd client-admin && npm install && npm run build && cd .. && echo 'Building server...' && cd server && npx prisma generate && npx prisma migrate deploy && cd .. && echo 'Build complete!'",
     "start": "node server/app.js",
     "server": "nodemon server/app.js",
     "client-user": "cd client-user && npm run dev",
