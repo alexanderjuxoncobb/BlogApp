@@ -117,6 +117,88 @@ router.get("/my-posts", authenticateJWT, async (req, res) => {
   }
 });
 
+// Get posts by a specific user
+router.get("/user/:userId", async (req, res) => {
+  try {
+    const userId = parseInt(req.params.userId);
+
+    if (isNaN(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID",
+      });
+    }
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, name: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Check if refresh parameter is present
+    const forceRefresh = req.query.refresh === "true";
+
+    // Cache key specific to this user's posts
+    const cacheKey = `user_posts_${userId}`;
+    const cachedPosts = !forceRefresh ? postsCache.get(cacheKey) : null;
+
+    if (cachedPosts) {
+      return res.json({
+        success: true,
+        message: `Posts by ${user.name}`,
+        user: { id: user.id, name: user.name },
+        posts: cachedPosts,
+      });
+    }
+
+    // Fetch posts from database
+    const posts = await prisma.post.findMany({
+      where: {
+        authorId: userId,
+        OR: [{ published: true }, { authorId: req.user?.id || -1 }],
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        published: true, // Include published status
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: { comments: true },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    // Store in cache
+    postsCache.set(cacheKey, posts);
+
+    res.json({
+      success: true,
+      message: `Posts by ${user.name}`,
+      user: { id: user.id, name: user.name },
+      posts,
+    });
+  } catch (error) {
+    console.error("Error fetching user posts:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch user posts",
+      error: error.message,
+    });
+  }
+});
+
 // Get a single post with comments
 // Get a single post with comments (updated secure version)
 router.get("/:id", optionalAuthenticateJWT, async (req, res) => {
@@ -195,88 +277,6 @@ router.get("/:id", optionalAuthenticateJWT, async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch post details",
-      error: error.message,
-    });
-  }
-});
-
-// Get posts by a specific user
-router.get("/user/:userId", async (req, res) => {
-  try {
-    const userId = parseInt(req.params.userId);
-
-    if (isNaN(userId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid user ID",
-      });
-    }
-
-    // Check if user exists
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, name: true },
-    });
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    // Check if refresh parameter is present
-    const forceRefresh = req.query.refresh === "true";
-
-    // Cache key specific to this user's posts
-    const cacheKey = `user_posts_${userId}`;
-    const cachedPosts = !forceRefresh ? postsCache.get(cacheKey) : null;
-
-    if (cachedPosts) {
-      return res.json({
-        success: true,
-        message: `Posts by ${user.name}`,
-        user: { id: user.id, name: user.name },
-        posts: cachedPosts,
-      });
-    }
-
-    // Fetch posts from database
-    const posts = await prisma.post.findMany({
-      where: {
-        authorId: userId,
-        OR: [{ published: true }, { authorId: req.user?.id || -1 }],
-      },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        published: true, // Include published status
-        createdAt: true,
-        updatedAt: true,
-        _count: {
-          select: { comments: true },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-    // Store in cache
-    postsCache.set(cacheKey, posts);
-
-    res.json({
-      success: true,
-      message: `Posts by ${user.name}`,
-      user: { id: user.id, name: user.name },
-      posts,
-    });
-  } catch (error) {
-    console.error("Error fetching user posts:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch user posts",
       error: error.message,
     });
   }
