@@ -22,7 +22,7 @@ function PostDetail() {
   const fetchPostDetails = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:5000/posts/${id}`, {
+      const response = await fetch(`/posts/${id}`, {
         credentials: "include",
       });
 
@@ -40,7 +40,7 @@ function PostDetail() {
       if (data.post && data.post.authorId) {
         try {
           const authorResponse = await fetch(
-            `http://localhost:5000/users/${data.post.authorId}`,
+            `/users/${data.post.authorId}`,
             {
               credentials: "include",
             }
@@ -72,7 +72,7 @@ function PostDetail() {
   // Fetch comments for this post
   const fetchComments = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/comments/${id}`, {
+      const response = await fetch(`/comments/${id}`, {
         credentials: "include",
       });
 
@@ -122,7 +122,7 @@ function PostDetail() {
   const handleDeleteComment = async (commentId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/comments/${commentId}`,
+        `/comments/${commentId}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -150,7 +150,7 @@ function PostDetail() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/posts/${id}`, {
+      const response = await fetch(`/posts/${id}`, {
         method: "DELETE",
         credentials: "include",
       });

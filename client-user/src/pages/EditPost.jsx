@@ -22,7 +22,7 @@ function EditPost() {
       setIsAuthorized(false); // Reset authorization state
       setError("");
       try {
-        const response = await fetch(`http://localhost:5000/posts/${id}`, {
+        const response = await fetch(`/posts/${id}`, {
           credentials: "include",
         });
 
@@ -101,7 +101,7 @@ function EditPost() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`http://localhost:5000/posts/${id}`, {
+      const response = await fetch(`/posts/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

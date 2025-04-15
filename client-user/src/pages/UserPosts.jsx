@@ -16,7 +16,7 @@ function UserPosts() {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:5000/posts/my-posts`,
+        `/posts/my-posts`,
         {
           credentials: "include",
         }
@@ -47,7 +47,7 @@ function UserPosts() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/posts/${postId}`, {
+      const response = await fetch(`/posts/${postId}`, {
         method: "DELETE",
         credentials: "include",
       });

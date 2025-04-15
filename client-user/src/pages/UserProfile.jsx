@@ -46,7 +46,7 @@ function UserProfile() {
     try {
       const userData = { name };
 
-      const response = await fetch(`http://localhost:5000/users/profile`, {
+      const response = await fetch(`/users/profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -98,7 +98,7 @@ function UserProfile() {
     setPasswordLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:5000/users/change-password`,
+        `/users/change-password`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

@@ -37,7 +37,7 @@ function CommentForm({ postId, onCommentAdded }) {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:5000/comments", {
+      const response = await fetch("/comments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

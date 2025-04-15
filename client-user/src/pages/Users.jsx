@@ -10,7 +10,7 @@ function Users() {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:5000/users", {
+        const response = await fetch("/users", {
           credentials: "include",
         });
 
