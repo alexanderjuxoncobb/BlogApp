@@ -205,7 +205,7 @@ router.get("/:id", optionalAuthenticateJWT, async (req, res) => {
   try {
     const postId = parseInt(req.params.id);
     const userId = req.user?.id; // Optional chaining for safe access
-    const userAdmin = req.user?.role === "ADMIN" ? true : false;
+    const userIsAdmin = req.user?.role === "ADMIN"; // Simplified boolean
 
     if (isNaN(postId)) {
       return res.status(400).json({
@@ -216,42 +216,49 @@ router.get("/:id", optionalAuthenticateJWT, async (req, res) => {
 
     const forceRefresh = req.query.refresh === "true";
     const cacheKey = `post_detail_${postId}`;
-    const cachedPost = !forceRefresh ? postsCache.get(cacheKey) : null;
 
-    // Check cached post permissions
-    if (cachedPost) {
-      const isAuthor = userId === cachedPost.authorId;
-      if (!cachedPost.published && !(isAuthor || userAdmin)) {
-        return res.status(404).json({
-          success: false,
-          message: "Post not found",
-        });
+    // --- Cache Check ---
+    if (!forceRefresh) {
+      const cachedPost = postsCache.get(cacheKey);
+      if (cachedPost) {
+        // Check permissions even for cached posts
+        const isAuthor = userId === cachedPost.authorId;
+        if (cachedPost.published || isAuthor || userIsAdmin) {
+          console.log(`Serving post ${postId} from cache`);
+          return res.json({ success: true, post: cachedPost });
+        } else {
+          // Cached post exists but user doesn't have permission
+          // Treat as not found for this user
+          // (Alternatively, could return 403 Forbidden)
+          return res.status(404).json({
+            success: false,
+            message: "Post not found or not accessible", // Keep message consistent
+          });
+        }
       }
-      return res.json({ success: true, post: cachedPost });
     }
 
-    // If user is admin, they can see any post
-    if (userAdmin) {
-      const post = await prisma.post.findUnique({
+    // --- Database Fetch ---
+    console.log(`Fetching post ${postId} from database`);
+    let post = null; // Declare post variable here
+
+    if (userIsAdmin) {
+      // Admin can see any post
+      post = await prisma.post.findUnique({
         where: { id: postId },
         include: {
           author: { select: { id: true, name: true, email: true } },
           comments: { orderBy: { createdAt: "desc" } },
         },
       });
-
-      if (post) {
-        return res.json({ success: true, post });
-      }
     } else {
-      // Fetch post from database with additional where clause
-      const post = await prisma.post.findFirst({
+      // Non-admin/unauthenticated user
+      post = await prisma.post.findFirst({
         where: {
           id: postId,
-          // Add database-level filtering
           OR: [
             { published: true },
-            { authorId: userId || -1 }, // -1 ensures no match if user not logged in
+            { authorId: userId || -1 }, // Allows author even if unpublished
           ],
         },
         include: {
@@ -259,25 +266,31 @@ router.get("/:id", optionalAuthenticateJWT, async (req, res) => {
           comments: { orderBy: { createdAt: "desc" } },
         },
       });
-
-      if (!post) {
-        return res.status(404).json({
-          success: false,
-          message: "Post not found",
-        });
-      }
     }
 
-    // Store in cache with TTL
-    postsCache.set(cacheKey, post, 300); // 5 minutes cache
+    // --- Handle Result ---
+    if (!post) {
+      // Covers post not existing OR not meeting criteria for non-admin
+      return res.status(404).json({
+        success: false,
+        message: "Post not found or not accessible",
+      });
+    }
 
+    // If post was found and is accessible
+    postsCache.set(cacheKey, post, 300); // Cache the result (5 minutes)
     res.json({ success: true, post });
   } catch (error) {
-    console.error("Error fetching post details:", error);
+    console.error(
+      `Error fetching post details for ID ${req.params.id}:`,
+      error
+    ); // Log which ID failed
     res.status(500).json({
       success: false,
       message: "Failed to fetch post details",
-      error: error.message,
+      // Optionally include error details in development, but not production
+      // error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      error: error.message, // For now, include for easier debugging
     });
   }
 });
