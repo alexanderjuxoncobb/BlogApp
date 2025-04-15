@@ -25,7 +25,7 @@ function ScrollToTop() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/admin">
       <AdminAuthProvider>
         <ScrollToTop />
         <Routes>
