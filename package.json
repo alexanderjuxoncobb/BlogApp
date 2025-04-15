@@ -4,8 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server/server.js",
-    "server": "nodemon server/server.js",
+    "start": "node server/app.js",
+    "server": "nodemon server/app.js",
     "client-user": "cd client-user && npm run dev",
     "client-admin": "cd client-admin && npm run dev",
     "dev": "concurrently \"cd server && npm run dev\" \"cd client-user && npm run dev\" \"cd client-admin && npm run dev\""
