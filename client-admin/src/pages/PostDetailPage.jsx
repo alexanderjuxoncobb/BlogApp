@@ -150,7 +150,7 @@ function PostDetailPage() {
             </Link>
             <button
               onClick={handleDelete}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700"
+              className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm shadow-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 hover:border-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
             >
               <svg
                 className="-ml-1 mr-2 h-5 w-5"

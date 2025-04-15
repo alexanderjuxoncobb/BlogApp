@@ -19,6 +19,11 @@ router.get("/users", async (req, res) => {
         role: true,
         createdAt: true,
         updatedAt: true,
+        _count: {
+          select: {
+            posts: true,
+          },
+        },
       },
     });
 

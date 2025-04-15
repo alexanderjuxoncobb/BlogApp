@@ -1,7 +1,8 @@
 // client-admin/src/App.jsx
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AdminAuthProvider } from "./contexts/AdminAuthContext";
 import AdminPrivateRoute from "./components/AdminPrivateRoute";
+import { useEffect } from "react";
 
 // Pages
 import DashboardPage from "./pages/DashboardPage";
@@ -12,10 +13,21 @@ import PostEditPage from "./pages/PostEditPage";
 import UsersPage from "./pages/UsersPage";
 import CommentsPage from "./pages/CommentsPage";
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter>
       <AdminAuthProvider>
+        <ScrollToTop />
         <Routes>
           {/* Public route - Login page */}
           <Route path="/login" element={<LoginPage />} />

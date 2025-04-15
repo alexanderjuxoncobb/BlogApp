@@ -193,14 +193,6 @@ router.put("/change-password", authenticateJWT, async (req, res) => {
       });
     }
 
-    // Minimum password length check
-    // if (newPassword.length < 6) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "New password must be at least 6 characters long",
-    //   });
-    // }
-
     // Get user with password
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -335,40 +327,6 @@ router.delete("/:id", async (req, res) => {
     console.error("Error details:", error);
     res.status(500).json({
       message: "Failed to delete user",
-      error: error.message,
-    });
-  }
-});
-
-router.post("/", async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-
-    const newUser = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password, // Note: In production, you should hash passwords
-      },
-    });
-
-    // Invalidate cache after adding new user
-    usersCache.del("all_users");
-
-    res.status(201).json({
-      success: true,
-      message: "User created successfully",
-      user: {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-      },
-    });
-  } catch (error) {
-    console.error("Error creating user:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to create user",
       error: error.message,
     });
   }

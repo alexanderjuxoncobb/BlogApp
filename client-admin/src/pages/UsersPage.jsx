@@ -24,7 +24,7 @@ function UsersPage() {
       const response = await getUsers();
       const usersWithPostCount = response.users.map((user) => ({
         ...user,
-        postCount: 0, // Default to 0 until we get actual post counts
+        postCount: user._count.posts,
       }));
 
       setUsers(usersWithPostCount);
