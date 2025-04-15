@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useAdminAuth } from "../../contexts/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
 
+const clientUrl = import.meta.env.VITE_CLIENT_URL || "http://localhost:5173";
+
 function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -139,7 +141,7 @@ function AdminLogin() {
             Admin access only. Regular users should use the main site login.
           </p>
           <a
-            href="http://localhost:5173"
+            href={clientUrl}
             className="text-sky-600 hover:text-sky-800 mt-2 inline-block transition-colors"
           >
             Return to main site

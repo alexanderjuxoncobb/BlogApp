@@ -1,6 +1,8 @@
 import { NavLink } from "react-router-dom";
 import { useAdminAuth } from "../../contexts/AdminAuthContext";
 
+const clientUrl = import.meta.env.VITE_CLIENT_URL || "http://localhost:5173";
+
 function Sidebar() {
   const { currentAdmin } = useAdminAuth();
 
@@ -108,7 +110,7 @@ function Sidebar() {
         </div>
 
         <a
-          href="http://localhost:5173"
+          href={clientUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="sidebar-nav-item"

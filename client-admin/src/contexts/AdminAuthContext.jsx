@@ -15,7 +15,7 @@ export const AdminAuthProvider = ({ children }) => {
 
   const fetchAdminProfile = async () => {
     try {
-      const response = await fetch("http://localhost:5000/auth/profile", {
+      const response = await fetch("/auth/profile", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -50,7 +50,7 @@ export const AdminAuthProvider = ({ children }) => {
 
   const refreshToken = async () => {
     try {
-      const response = await fetch("http://localhost:5000/auth/refresh-token", {
+      const response = await fetch("/auth/refresh-token", {
         method: "POST",
         credentials: "include", // Important for cookies
         headers: {
@@ -72,7 +72,7 @@ export const AdminAuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch("http://localhost:5000/auth/login", {
+      const response = await fetch("/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -105,7 +105,7 @@ export const AdminAuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch("http://localhost:5000/auth/logout", {
+      await fetch("/auth/logout", {
         method: "POST",
         credentials: "include",
       });
