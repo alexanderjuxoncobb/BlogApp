@@ -15,12 +15,9 @@ function UserPosts() {
   const fetchUserPosts = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `/posts/my-posts`,
-        {
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`/posts/my-posts`, {
+        credentials: "include",
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch your posts");
@@ -191,7 +188,7 @@ function UserPosts() {
                         />
                       </div>
                     </div>
-                    <div className="flex flex-wrap items-center space-x-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Link
                         to={`/posts/${post.id}`}
                         className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
