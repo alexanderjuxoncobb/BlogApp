@@ -285,7 +285,7 @@ router.delete("/account", authenticateJWT, async (req, res) => {
 });
 
 // server/routes/users.js
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", isAdmin, async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
 
