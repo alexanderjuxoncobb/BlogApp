@@ -50,12 +50,12 @@ if (process.env.NODE_ENV === 'production') {
   app.use('/admin', express.static(join(__dirname, '../client-admin/dist')));
   
   // Handle client-side routing for admin client
-  app.get('/admin/*', (req, res) => {
+  app.get('/admin/(.*)', (req, res) => {
     res.sendFile(join(__dirname, '../client-admin/dist/index.html'));
   });
   
   // Handle client-side routing for regular client
-  app.get('/*', (req, res) => {
+  app.get('/(.*)', (req, res) => {
     res.sendFile(join(__dirname, '../client-user/dist/index.html'));
   });
 }
