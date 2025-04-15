@@ -15,7 +15,7 @@ const __dirname = dirname(__filename);
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 
 // CORS configuration
 const corsOptions = {
@@ -50,13 +50,13 @@ if (process.env.NODE_ENV === "production") {
   // Serve the admin client on a specific route
   app.use("/admin", express.static(join(__dirname, "../client-admin/dist")));
 
-  // Handle client-side routing for admin client - simplified approach
-  app.get("/admin/:rest*", (req, res) => {
+  // Handle client-side routing for admin client
+  app.get(/^\/admin(?:\/.*)?$/, (req, res) => {
     res.sendFile(join(__dirname, "../client-admin/dist/index.html"));
   });
 
-  // Handle client-side routing for regular client - catch-all route
-  app.get(":rest*", (req, res) => {
+  // Handle client-side routing for regular client
+  app.get(/^(?!\/admin)(?:\/.*)?$/, (req, res) => {
     res.sendFile(join(__dirname, "../client-user/dist/index.html"));
   });
 }
