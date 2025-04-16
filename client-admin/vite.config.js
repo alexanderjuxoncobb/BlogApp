@@ -7,7 +7,4 @@ export default defineConfig({
   css: {
     postcss: "./postcss.config.js",
   },
-  server: {
-    port: 5174, // Different port from client-user (5173)
-  },
 });
