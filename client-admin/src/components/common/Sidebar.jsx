@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useAdminAuth } from "../../contexts/AdminAuthContext";
 
-const clientUrl = import.meta.env.VITE_CLIENT_URL || "http://localhost:5173";
+const clientUrl = __CLIENT_URL__;
 
 function Sidebar() {
   const { currentAdmin } = useAdminAuth();
