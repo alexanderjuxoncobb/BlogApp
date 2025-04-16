@@ -1,7 +1,8 @@
 // client-admin/src/utils/api.js
 const getBaseUrl = () => {
   const origin = import.meta.env.VITE_API_URL || window.location.origin;
-  return origin.endsWith("/admin") ? origin.slice(0, -6) : origin;
+  const baseUrl = origin.endsWith("/admin") ? origin.slice(0, -6) : origin;
+  return baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
 };
 
 const API_URL = getBaseUrl();
