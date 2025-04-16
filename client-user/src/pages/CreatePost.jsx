@@ -66,7 +66,7 @@ function CreatePost() {
 
   return (
     <div className="container mx-auto px-4 py-10">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="mb-8">
           <Link
             to="/"

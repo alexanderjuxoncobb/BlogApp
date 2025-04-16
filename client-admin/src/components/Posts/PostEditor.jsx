@@ -126,7 +126,7 @@ function PostEditor({ post, onSave, onCancel }) {
           >
             Publish post
           </label>
-          <p className="ml-6 text-xs text-gray-500">
+          <p className="ml-6 my-auto text-xs text-gray-500">
             {published
               ? "Post will be visible to everyone."
               : "Post will be saved as a draft and only visible to you."}
