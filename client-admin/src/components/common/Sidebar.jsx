@@ -110,7 +110,7 @@ function Sidebar() {
         </div>
 
         <a
-          href={clientUrl}
+          href="https://blog-api-top-production.up.railway.app/"
           target="_blank"
           rel="noopener noreferrer"
           className="sidebar-nav-item"
