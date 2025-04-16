@@ -1,9 +1,10 @@
 // client-admin/src/utils/api.js
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  (window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : `${window.location.origin}`);
+const getBaseUrl = () => {
+  const origin = import.meta.env.VITE_API_URL || window.location.origin;
+  return origin.endsWith("/admin") ? origin.slice(0, -6) : origin;
+};
+
+const API_URL = getBaseUrl();
 
 // Generic request function with authentication
 export const apiRequest = async (endpoint, options = {}) => {
