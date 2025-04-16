@@ -100,7 +100,7 @@ function Home() {
                   </Link>
                   <Link
                     to="/register"
-                    className="bg-sky-500 hover:bg-sky-600 text-white font-medium py-3 px-6 rounded-md transition-colors"
+                    className="bg-sky-600 hover:bg-sky-700 text-white font-medium py-3 px-6 rounded-md transition-colors"
                   >
                     Sign up
                   </Link>

@@ -289,7 +289,7 @@ function EditPost() {
               <button
                 type="submit"
                 disabled={!isAuthorized || loading} // Disable if not authorized OR submitting
-                className={`inline-flex justify-center py-2.5 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r bg-sky-500 hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition duration-200 ${
+                className={`inline-flex justify-center py-2.5 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition duration-200 ${
                   !isAuthorized || loading
                     ? "opacity-50 cursor-not-allowed"
                     : ""

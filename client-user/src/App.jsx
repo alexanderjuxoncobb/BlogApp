@@ -37,6 +37,8 @@ function ScrollToTop() {
 function NavBar() {
   const { currentUser, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const adminUrl =
+    import.meta.env.VITE_ADMIN_CLIENT_URL || "http://localhost:5174";
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -74,6 +76,29 @@ function NavBar() {
             >
               About
             </NavLink>
+
+            <a
+              href={adminUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-300 hover:text-white transition-colors flex items-center"
+            >
+              Admin
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 ml-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+            </a>
 
             {currentUser && (
               <NavLink
@@ -208,6 +233,30 @@ function NavBar() {
             >
               About
             </NavLink>
+
+            <a
+              href={adminUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center py-2 px-3 rounded text-gray-300 hover:bg-gray-800"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Admin
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 ml-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+            </a>
 
             {currentUser && (
               <NavLink
