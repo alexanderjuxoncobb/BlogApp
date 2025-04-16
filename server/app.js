@@ -38,18 +38,20 @@ app.use(cookieParser());
 // Initialize Passport
 app.use(passport.initialize());
 
-// Routes
-app.use("/auth", authRoutes);
-app.use("/", routes);
-
-// Serve admin and user clients from different directories in production
 if (process.env.NODE_ENV === "production") {
   // Serve the regular user client
   app.use(express.static(join(__dirname, "../client-user/dist")));
 
   // Serve the admin client on a specific route
   app.use("/admin", express.static(join(__dirname, "../client-admin/dist")));
+}
 
+// Routes
+app.use("/auth", authRoutes);
+app.use("/", routes);
+
+// Serve admin and user clients from different directories in production
+if (process.env.NODE_ENV === "production") {
   // Handle client-side routing for admin client
   app.get(/^\/admin(?:\/.*)?$/, (req, res) => {
     res.sendFile(join(__dirname, "../client-admin/dist/index.html"));
