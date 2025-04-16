@@ -1,8 +1,9 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAdminAuth } from "../contexts/AdminAuthContext";
 
 function AdminPrivateRoute({ children }) {
   const { currentAdmin, loading } = useAdminAuth();
+  const location = useLocation();
 
   // Show loading indicator while checking authentication
   if (loading) {
@@ -15,7 +16,8 @@ function AdminPrivateRoute({ children }) {
 
   // Redirect to login if not authenticated as admin
   if (!currentAdmin || currentAdmin.role !== "ADMIN") {
-    return <Navigate to="/login" />;
+    // Pass the current location so we can redirect back after login
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Render children if authenticated as admin

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 const clientUrl = import.meta.env.VITE_CLIENT_URL || "http://localhost:5173";
 
-function AdminLogin() {
+function AdminLogin({ redirectPath = "/" }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,7 +23,8 @@ function AdminLogin() {
       const result = await login(email, password);
 
       if (result.success) {
-        navigate("/");
+        // Navigate to the redirect path (where they were trying to go)
+        navigate(redirectPath);
       } else {
         setError(result.message || "Failed to log in");
       }
