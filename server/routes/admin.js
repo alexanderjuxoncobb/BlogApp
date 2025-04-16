@@ -1,15 +1,17 @@
 // server/routes/admin.js
 import express from "express";
 import prisma from "../utils/prisma.js";
-import { isAdmin } from "../middleware/adminMiddleware.js";
+import { isAdmin } from "../middleware/adminMiddleware.js"; // Your admin check middleware
 
 const router = express.Router();
 
-// All routes here are protected by the isAdmin middleware
-router.use(isAdmin);
+// IMPORTANT: The global 'router.use(isAdmin)' has been removed.
+// Now, 'isAdmin' is applied specifically to each route below that requires admin privileges.
+// This prevents the middleware from blocking requests for non-API paths like '/admin/login'.
 
 // Get all users (admin only)
-router.get("/users", async (req, res) => {
+// Apply isAdmin middleware specifically to this route
+router.get("/users", isAdmin, async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       select: {
@@ -41,8 +43,9 @@ router.get("/users", async (req, res) => {
   }
 });
 
-// Get admin dashboard stats
-router.get("/dashboard/stats", async (req, res) => {
+// Get admin dashboard stats (admin only)
+// Apply isAdmin middleware specifically to this route
+router.get("/dashboard/stats", isAdmin, async (req, res) => {
   try {
     // Count total users
     const totalUsers = await prisma.user.count();
@@ -118,8 +121,9 @@ router.get("/dashboard/stats", async (req, res) => {
   }
 });
 
-// Change user role to ADMIN
-router.patch("/users/:id/make-admin", async (req, res) => {
+// Change user role to ADMIN (admin only)
+// Apply isAdmin middleware specifically to this route
+router.patch("/users/:id/make-admin", isAdmin, async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
 
@@ -167,8 +171,9 @@ router.patch("/users/:id/make-admin", async (req, res) => {
   }
 });
 
-// Change user role to USER
-router.patch("/users/:id/revoke-admin", async (req, res) => {
+// Change user role to USER (admin only)
+// Apply isAdmin middleware specifically to this route
+router.patch("/users/:id/revoke-admin", isAdmin, async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
 
@@ -223,5 +228,8 @@ router.patch("/users/:id/revoke-admin", async (req, res) => {
     });
   }
 });
+
+// If you add more routes to this file later that should be admin-only,
+// make sure to add 'isAdmin' as middleware to them as well.
 
 export default router;
