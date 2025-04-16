@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useAdminAuth } from "../../contexts/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
 
-const clientUrl = import.meta.env.VITE_CLIENT_URL || "http://localhost:5173";
+const clientUrl =
+  import.meta.env.VITE_CLIENT_URL ||
+  "https://blog-api-top-production.up.railway.app/";
 
 function AdminLogin({ redirectPath = "/" }) {
   const [email, setEmail] = useState("");
