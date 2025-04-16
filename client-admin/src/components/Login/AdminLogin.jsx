@@ -142,7 +142,7 @@ function AdminLogin({ redirectPath = "/" }) {
             Admin access only. Regular users should use the main site login.
           </p>
           <a
-            href="https://blog-api-top-production.up.railway.app/"
+            href={import.meta.env.VITE_CLIENT_URL || "/"}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sky-600 hover:text-sky-800 mt-2 inline-block transition-colors"
