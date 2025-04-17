@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAdminAuth } from "../../contexts/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
 
-const clientUrl = __CLIENT_URL__;
+const clientUrl = import.meta.env.VITE_CLIENT_URL || "/";
 
 function AdminLogin({ redirectPath = "/" }) {
   const [email, setEmail] = useState("");
@@ -142,7 +142,7 @@ function AdminLogin({ redirectPath = "/" }) {
             Admin access only. Regular users should use the main site login.
           </p>
           <a
-            href={import.meta.env.VITE_CLIENT_URL || "/"}
+            href={clientUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sky-600 hover:text-sky-800 mt-2 inline-block transition-colors"
