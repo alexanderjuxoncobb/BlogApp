@@ -8,7 +8,7 @@ import bcrypt from "bcrypt";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.get("/", isAdmin, async (req, res) => {
   try {
     // Check if refresh parameter is present
     const forceRefresh = req.query.refresh === "true";
