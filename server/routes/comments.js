@@ -4,7 +4,10 @@ import express from "express";
 import prisma from "../utils/prisma.js";
 import { commentsCache } from "../utils/cache.js";
 // >>> CHANGE 1: Ensure correct import path for your middleware <<<
-import { authenticateJWT } from "../middleware/authMiddleware.js"; // Verify this path
+import {
+  authenticateJWT,
+  optionalAuthenticateJWT,
+} from "../middleware/authMiddleware.js"; // Verify this path
 
 const router = express.Router();
 
@@ -185,28 +188,31 @@ router.delete("/:id", authenticateJWT, async (req, res) => {
 });
 
 // POST / - Create a new comment
-// >>> CHANGE 4: Add authentication and save userId <<<
-router.post("/", authenticateJWT, async (req, res) => {
-  // Added authenticateJWT
+router.post("/", optionalAuthenticateJWT, async (req, res) => {
+  // --- Hardcoded Guest User ID ---
+  // ID 4 is designated for guests.
+  const GUEST_USER_ID = 4;
+
   try {
-    // Keep taking name from body as per original code
     const { name, content, postId: postIdParam } = req.body;
-    const currentUser = req.user; // User from middleware
+    const currentUser = req.user; // User from middleware (might be undefined)
 
-    // Check if middleware provided user data (basic check)
-    if (!currentUser || !currentUser.id) {
-      console.error("Authentication middleware problem in POST:", currentUser);
-      return res
-        .status(401)
-        .json({ success: false, message: "Authentication error." }); // Generic message
-    }
-
-    // Basic validation
+    // --- Basic validation ---
     if (!name || !content || !postIdParam) {
       return res.status(400).json({
         success: false,
         message: "Missing required fields: name, content, postId",
       });
+    }
+    if (typeof name !== "string" || name.trim().length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Name cannot be empty." });
+    }
+    if (typeof content !== "string" || content.trim().length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Content cannot be empty." });
     }
     if (isNaN(parseInt(postIdParam))) {
       return res
@@ -215,16 +221,20 @@ router.post("/", authenticateJWT, async (req, res) => {
     }
     const postId = parseInt(postIdParam);
 
-    // Create comment, saving name from body AND userId from authenticated user
+    // --- Determine the User ID to Save ---
+    const userIdToSave =
+      currentUser && currentUser.id ? currentUser.id : GUEST_USER_ID;
+
+    // --- Create comment ---
     const newComment = await prisma.comment.create({
       data: {
-        name: name, // Use name from request body
-        content: content,
+        name: name.trim(), // Use name from request body
+        content: content.trim(),
         postId: postId,
-        userId: currentUser.id, // Save the ID of the user making the comment
+        userId: userIdToSave, // Use determined userId (real user or guest)
       },
-      // Select fields consistent with GET request + userId
       select: {
+        // Select fields consistent with GET request + userId
         id: true,
         name: true,
         content: true,
@@ -234,10 +244,17 @@ router.post("/", authenticateJWT, async (req, res) => {
       },
     });
 
-    // Invalidate Cache
-    commentsCache.del(`comments_${postId}`);
+    // --- Invalidate Cache ---
+    if (typeof commentsCache.del === "function") {
+      commentsCache.del(`comments_${postId}`);
+    } else {
+      console.warn(
+        "commentsCache.del is not defined. Cache not invalidated for post",
+        postId
+      );
+    }
 
-    // Send original success response structure
+    // --- Send original success response structure ---
     res.status(201).json({
       success: true,
       message: "Comment created successfully",
@@ -245,17 +262,53 @@ router.post("/", authenticateJWT, async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating comment:", error);
+
     // Handle specific known errors
-    if (error.code === "P2003" && error.meta?.field_name?.includes("postId")) {
+    if (error.code === "P2003") {
+      // Foreign key constraint failed
+      if (error.meta?.field_name?.includes("userId")) {
+        console.error(
+          `Foreign key constraint failed for userId. Ensure the hardcoded GUEST_USER_ID (${GUEST_USER_ID}) exists in the User table.`
+        );
+        return res.status(500).json({
+          // Internal server error because config (hardcoded value) might be wrong
+          success: false,
+          message:
+            "Failed to create comment due to a server configuration issue (Guest user ID might be invalid).",
+        });
+      } else if (error.meta?.field_name?.includes("postId")) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid postId: The specified post does not exist.",
+        });
+      }
       return res.status(400).json({
         success: false,
-        message: "Invalid postId: The specified post does not exist.",
+        message: "Invalid reference to related data.",
       });
     }
+    if (error.code === "P2002") {
+      // Unique constraint violation
+      const target = error.meta?.target
+        ? ` on field(s): ${error.meta.target.join(", ")}`
+        : "";
+      return res.status(409).json({
+        success: false,
+        message: `A unique constraint was violated${target}.`,
+      });
+    }
+    if (error.code === "P2025") {
+      // Required record not found
+      return res.status(404).json({
+        success: false,
+        message: "Required related record not found.",
+      });
+    }
+
     // Generic server error for other issues
     res.status(500).json({
       success: false,
-      message: "Failed to create comment",
+      message: "Failed to create comment due to an unexpected server error.",
     });
   }
 });
