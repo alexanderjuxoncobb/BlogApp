@@ -106,10 +106,6 @@ function PostEditor({ post, onSave, onCancel }) {
             placeholder="Write your post content here..."
             required
           ></textarea>
-          <p className="mt-2 text-xs text-gray-500">
-            Use Markdown for formatting your content with headings, lists, and
-            more.
-          </p>
         </div>
 
         <div className="mb-6 flex items-center">

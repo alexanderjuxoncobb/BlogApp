@@ -427,7 +427,7 @@ router.delete("/:id", authenticateJWT, async (req, res) => {
     }
 
     // Ensure only the author can delete the post
-    if (existingPost.authorId !== userId) {
+    if (existingPost.authorId !== userId && req.user.role !== "ADMIN") {
       return res.status(403).json({
         message: "You do not have permission to delete this post",
       });

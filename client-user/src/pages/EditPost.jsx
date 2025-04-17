@@ -245,9 +245,6 @@ function EditPost() {
                 required
                 disabled={!isAuthorized || loading} // Disable if not authorized or submitting
               ></textarea>
-              <p className="mt-2 text-xs text-gray-500">
-                Markdown is supported for formatting.
-              </p>
             </div>
 
             {/* Published Toggle */}

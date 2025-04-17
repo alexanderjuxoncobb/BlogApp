@@ -155,10 +155,6 @@ function CreatePost() {
                 placeholder="Write your post content here..."
                 required
               ></textarea>
-              <p className="mt-2 text-xs text-gray-500">
-                Pro tip: Use Markdown to format your content with headings,
-                lists, and more.
-              </p>
             </div>
 
             {/* Published Toggle */}
