@@ -10,7 +10,7 @@ note: need to`:
 front end to look nicer (done)
 allow to click published vs not. also can they do this from the my postrs page too? (done)
 include nextJS ? (no need -- can use if needed in future)
-then build and set up the admin side of the app!
+then build and set up the admin side of the app.
 
 
 
