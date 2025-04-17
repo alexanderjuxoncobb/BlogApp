@@ -1,4 +1,4 @@
-// server/app.js - FIXED
+// server/app.js
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -38,30 +38,50 @@ app.use(cookieParser());
 // Initialize Passport
 app.use(passport.initialize());
 
+// API Routes - Define API routes before static file handling
+app.use("/auth", authRoutes);
+app.use("/", routes);
+
+// Static file serving in production
 if (process.env.NODE_ENV === "production") {
   // Serve the regular user client
   app.use(express.static(join(__dirname, "../client-user/dist")));
 
-  // Serve the admin client on a specific route
-  app.use("/admin", express.static(join(__dirname, "../client-admin/dist")));
-}
+  // Serve the admin client assets - make sure this has higher precedence
+  app.use(
+    "/admin",
+    express.static(join(__dirname, "../client-admin/dist"), {
+      setHeaders: (res, path) => {
+        // Set correct MIME types for JavaScript files
+        if (path.endsWith(".js")) {
+          res.set("Content-Type", "application/javascript");
+        }
+      },
+    })
+  );
 
-// Routes
-app.use("/auth", authRoutes);
-app.use("/", routes);
+  // AFTER static file middleware, handle client-side routing
 
-// Serve admin and user clients from different directories in production
-if (process.env.NODE_ENV === "production") {
-  // Handle client-side routing for admin client
-  app.get(/^\/admin(?:\/.*)?$/, (req, res) => {
+  // Handle client-side routing for admin paths EXCEPT asset requests
+  app.get(/^\/admin(?:\/(?!assets\/).*)?\/?$/, (req, res) => {
     res.sendFile(join(__dirname, "../client-admin/dist/index.html"));
   });
 
   // Handle client-side routing for regular client
-  app.get(/^(?!\/admin)(?:\/.*)?$/, (req, res) => {
+  // Avoid matching paths that should be handled by API or admin routes
+  app.get(/^(?!\/admin)(?!\/auth)(?!\/api)(?:\/.*)?$/, (req, res) => {
     res.sendFile(join(__dirname, "../client-user/dist/index.html"));
   });
 }
+
+// 404 handler for asset requests that weren't found
+app.use((req, res, next) => {
+  if (req.path.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg)$/)) {
+    console.log(`404 for asset: ${req.path}`);
+    return res.status(404).send("Asset not found");
+  }
+  next();
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
