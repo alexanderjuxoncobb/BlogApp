@@ -1,4 +1,4 @@
-// Fixed CommentForm.jsx
+// Fixed CommentForm.jsx - WITH DEBUG LOGS
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -8,7 +8,7 @@ function CommentForm({ postId, onCommentAdded }) {
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false); // Add this to track submission
+  const [submitted, setSubmitted] = useState(false); // Track submission
 
   useEffect(() => {
     if (currentUser) {
@@ -20,9 +20,14 @@ function CommentForm({ postId, onCommentAdded }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("[DEBUG] handleSubmit triggered. Current state:", {
+      loading,
+      submitted,
+    }); // Log entry
 
     // Prevent multiple submissions
     if (loading || submitted) {
+      console.log("[DEBUG] Submission blocked by guard clause."); // Log if blocked
       return;
     }
 
@@ -40,10 +45,14 @@ function CommentForm({ postId, onCommentAdded }) {
       return;
     }
 
+    console.log("[DEBUG] Setting loading = true"); // Log before setting state
     setLoading(true);
     setError("");
+    // No need to explicitly set submitted = false here unless resetting from a failed state
+    // setSubmitted(false);
 
     try {
+      console.log("[DEBUG] Sending fetch request..."); // Log before fetch
       const response = await fetch("/comments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -54,6 +63,7 @@ function CommentForm({ postId, onCommentAdded }) {
           postId: parseInt(postId),
         }),
       });
+      console.log("[DEBUG] Fetch response received:", response.status); // Log after fetch
 
       if (!response.ok) {
         let errorMsg = "Failed to add comment";
@@ -61,12 +71,20 @@ function CommentForm({ postId, onCommentAdded }) {
           const errData = await response.json();
           errorMsg = errData.message || errorMsg;
         } catch (_) {}
+        // Log before throwing
+        console.error(
+          "[DEBUG] Fetch response not OK:",
+          response.status,
+          errorMsg
+        );
         throw new Error(errorMsg);
       }
 
       const data = await response.json();
+      console.log("[DEBUG] Fetch response parsed:", data);
 
       // Set submitted flag to prevent multiple submissions
+      console.log("[DEBUG] Setting submitted = true");
       setSubmitted(true);
 
       // Clear the content field on successful submission
@@ -74,20 +92,33 @@ function CommentForm({ postId, onCommentAdded }) {
 
       // Reset submission state after a delay
       setTimeout(() => {
+        console.log("[DEBUG] Resetting submitted = false after timeout");
         setSubmitted(false);
-      }, 2000);
+      }, 2000); // 2 seconds
 
-      if (onCommentAdded && data.comment) onCommentAdded(data.comment);
+      if (onCommentAdded && data.comment) {
+        console.log("[DEBUG] Calling onCommentAdded callback.");
+        onCommentAdded(data.comment);
+      } else {
+        console.log(
+          "[DEBUG] onCommentAdded callback not provided or no comment data."
+        );
+      }
     } catch (error) {
-      console.error("Error adding comment:", error);
+      console.error("[DEBUG] Error caught in handleSubmit:", error); // Log error
       setError(error.message || "Failed to add comment. Please try again.");
+      // NOTE: setLoading(false) will happen in finally. If you need to reset
+      // submitted state on error, do it here or ensure finally handles it.
+      // setSubmitted(false); // Optionally reset submitted on error
     } finally {
+      console.log("[DEBUG] Setting loading = false in finally block"); // Log in finally
       setLoading(false);
     }
   };
 
   return (
     <div className="max-w-2xl mx-auto mt-6 bg-white border border-gray-200 p-6 rounded-lg shadow">
+      {/* Error Display */}
       {error && (
         <div className="mb-4 flex items-center text-sm text-red-700 bg-red-50 border border-red-200 p-3 rounded-md">
           <svg
@@ -108,6 +139,7 @@ function CommentForm({ postId, onCommentAdded }) {
         </div>
       )}
 
+      {/* Success Message */}
       {submitted && (
         <div className="mb-4 flex items-center text-sm text-green-700 bg-green-50 border border-green-200 p-3 rounded-md">
           <svg
@@ -128,6 +160,7 @@ function CommentForm({ postId, onCommentAdded }) {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Name Field */}
         <div>
           <label
             htmlFor="name"
@@ -140,7 +173,7 @@ function CommentForm({ postId, onCommentAdded }) {
             id="name"
             value={name}
             onChange={(e) => !currentUser && setName(e.target.value)}
-            disabled={!!currentUser || loading || submitted}
+            disabled={!!currentUser || loading || submitted} // Disable based on auth, loading, or submitted state
             className={`w-full px-3 py-2 text-sm border rounded-md shadow-sm ${
               currentUser || loading || submitted
                 ? "bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed"
@@ -154,6 +187,7 @@ function CommentForm({ postId, onCommentAdded }) {
           )}
         </div>
 
+        {/* Comment Content Field */}
         <div>
           <label
             htmlFor="content"
@@ -167,7 +201,7 @@ function CommentForm({ postId, onCommentAdded }) {
             onChange={(e) => setContent(e.target.value)}
             rows="4"
             placeholder="Write your comment..."
-            disabled={loading || submitted}
+            disabled={loading || submitted} // Disable during loading or after submission (until reset)
             className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm ${
               loading || submitted
                 ? "bg-gray-100 text-gray-500 cursor-not-allowed"
@@ -177,9 +211,11 @@ function CommentForm({ postId, onCommentAdded }) {
           ></textarea>
         </div>
 
+        {/* Submit Button */}
         <div className="flex justify-end">
           <button
             type="submit"
+            // Button is disabled if loading, or already submitted (briefly), or content is empty
             disabled={loading || submitted || !content.trim()}
             className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -208,7 +244,7 @@ function CommentForm({ postId, onCommentAdded }) {
                 </svg>
                 Submitting...
               </>
-            ) : submitted ? (
+            ) : submitted ? ( // Show "Comment Posted" briefly after success
               "Comment Posted"
             ) : (
               "Add Comment"
