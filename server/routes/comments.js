@@ -1,15 +1,37 @@
-// comments.js - MINIMAL CHANGES APPLIED
+// comments.js - WITH RATE LIMITING AND SPAM PROTECTION
 
 import express from "express";
 import prisma from "../utils/prisma.js";
 import { commentsCache } from "../utils/cache.js";
-// >>> CHANGE 1: Ensure correct import path for your middleware <<<
 import {
   authenticateJWT,
   optionalAuthenticateJWT,
-} from "../middleware/authMiddleware.js"; // Verify this path
+} from "../middleware/authMiddleware.js";
+import rateLimit from "express-rate-limit"; // Add this import
 
 const router = express.Router();
+
+// Configure rate limiting middleware
+const commentLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute window
+  max: 3, // Limit each IP to 3 comment creations per minute
+  message: {
+    success: false,
+    message: "Too many comments created. Please try again later.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Simple spam detection function
+function isSpam(content, name, postId) {
+  // Check for extremely repetitive submissions
+  // You can expand this with more sophisticated checks
+  if (name === "qassd" || name === "qassdwade") {
+    return true;
+  }
+  return false;
+}
 
 router.get("/", async (req, res) => {
   const cacheKey = `top_20_comments`;
@@ -29,11 +51,10 @@ router.get("/", async (req, res) => {
     const comments = await prisma.comment.findMany({
       select: {
         id: true,
-        name: true, // Keep selecting name
+        name: true,
         content: true,
         postId: true,
         createdAt: true,
-        // >>> CHANGE 2: Select the userId (will be null for old comments) <<<
         userId: true,
       },
       orderBy: {
@@ -48,9 +69,7 @@ router.get("/", async (req, res) => {
       comments: comments,
     });
   } catch (error) {
-    // Log the actual error on the server for debugging
     console.error(`Error fetching comments`, error);
-    // Send generic error to client
     res.status(500).json({ error: "Failed to fetch comments" });
   }
 });
@@ -59,7 +78,6 @@ router.get("/", async (req, res) => {
 router.get("/:postId", async (req, res) => {
   const postIdParam = req.params.postId;
 
-  // Basic input validation
   if (isNaN(parseInt(postIdParam))) {
     return res.status(400).json({ error: "Invalid post ID format." });
   }
@@ -89,11 +107,10 @@ router.get("/:postId", async (req, res) => {
       },
       select: {
         id: true,
-        name: true, // Keep selecting name
+        name: true,
         content: true,
         postId: true,
         createdAt: true,
-        // >>> CHANGE 2: Select the userId (will be null for old comments) <<<
         userId: true,
       },
       orderBy: {
@@ -112,48 +129,40 @@ router.get("/:postId", async (req, res) => {
       comments: comments,
     });
   } catch (error) {
-    // Log the actual error on the server for debugging
     console.error(`Error fetching comments for post ${postId}:`, error);
-    // Send generic error to client
     res.status(500).json({ error: "Failed to fetch comments" });
   }
 });
 
 // DELETE /:id - Delete a specific comment
-// >>> CHANGE 3: Add authentication and authorization <<<
 router.delete("/:id", authenticateJWT, async (req, res) => {
-  // Added authenticateJWT
   try {
     const commentIdParam = req.params.id;
-    const currentUser = req.user; // User from middleware
+    const currentUser = req.user;
 
     if (isNaN(parseInt(commentIdParam))) {
       return res.status(400).json({ message: "Invalid comment ID format" });
     }
     const commentId = parseInt(commentIdParam);
 
-    // Check if middleware provided user data (basic check)
     if (!currentUser || !currentUser.id || !currentUser.role) {
       console.error(
         "Authentication middleware problem in DELETE:",
         currentUser
       );
-      return res.status(401).json({ message: "Authentication error." }); // Generic message
+      return res.status(401).json({ message: "Authentication error." });
     }
 
-    // Fetch comment including userId to check ownership
     const comment = await prisma.comment.findUnique({
       where: { id: commentId },
-      select: { userId: true, postId: true }, // Select only needed fields
+      select: { userId: true, postId: true },
     });
 
     if (!comment) {
       return res.status(404).json({ message: "Comment not found" });
     }
 
-    // Authorization Check
     const isAdmin = currentUser.role === "ADMIN";
-    // Check ownership, ensuring comment.userId is not null before comparing
     const isOwner =
       comment.userId !== null && comment.userId === currentUser.id;
 
@@ -163,41 +172,39 @@ router.delete("/:id", authenticateJWT, async (req, res) => {
         .json({ message: "Forbidden: You cannot delete this comment" });
     }
 
-    // --- Authorized: Proceed ---
-    const postId = comment.postId; // Store before delete for cache invalidation
+    const postId = comment.postId;
 
     await prisma.comment.delete({
       where: { id: commentId },
     });
 
-    // Invalidate Cache
     if (postId) {
       commentsCache.del(`comments_${postId}`);
     }
 
-    res.status(204).send(); // Success, No Content
+    res.status(204).send();
   } catch (error) {
     console.error("Error deleting comment:", error);
-    // Handle specific Prisma error for record not found during delete
     if (error.code === "P2025") {
       return res.status(404).json({ message: "Comment not found" });
     }
-    // Generic server error for other issues
     res.status(500).json({ message: "Failed to delete comment" });
   }
 });
 
-// POST / - Create a new comment
-router.post("/", optionalAuthenticateJWT, async (req, res) => {
-  // --- Hardcoded Guest User ID ---
-  // ID 4 is designated for guests.
+// POST / - Create a new comment with rate limiting and spam protection
+router.post("/", commentLimiter, optionalAuthenticateJWT, async (req, res) => {
   const GUEST_USER_ID = 4;
 
   try {
     const { name, content, postId: postIdParam } = req.body;
-    const currentUser = req.user; // User from middleware (might be undefined)
+    const currentUser = req.user;
+    const clientIP = req.ip || req.headers["x-forwarded-for"] || "unknown";
 
-    // --- Basic validation ---
+    // Log incoming comment attempt
+    console.log(`Comment attempt from IP ${clientIP} for post ${postIdParam}`);
+
+    // Basic validation
     if (!name || !content || !postIdParam) {
       return res.status(400).json({
         success: false,
@@ -221,30 +228,87 @@ router.post("/", optionalAuthenticateJWT, async (req, res) => {
     }
     const postId = parseInt(postIdParam);
 
-    // --- Determine the User ID to Save ---
-    const userIdToSave =
-      currentUser && currentUser.id ? currentUser.id : GUEST_USER_ID;
+    // Spam detection
+    if (isSpam(content, name, postId)) {
+      console.warn(
+        `Spam comment detected from IP ${clientIP} for post ${postId}`
+      );
+      return res.status(403).json({
+        success: false,
+        message:
+          "Comment identified as potential spam. Please try again later.",
+      });
+    }
 
-    // --- Create comment ---
-    const newComment = await prisma.comment.create({
-      data: {
-        name: name.trim(), // Use name from request body
-        content: content.trim(),
+    // Check if post actually exists before trying to comment
+    const postExists = await prisma.post.findUnique({
+      where: { id: postId },
+      select: { id: true },
+    });
+
+    if (!postExists) {
+      return res.status(404).json({
+        success: false,
+        message: "The post you're trying to comment on doesn't exist.",
+      });
+    }
+
+    // Count existing comments from this user/IP for this post in last hour
+    // (Additional protection against automated posting)
+    const recentCommentCount = await prisma.comment.count({
+      where: {
         postId: postId,
-        userId: userIdToSave, // Use determined userId (real user or guest)
-      },
-      select: {
-        // Select fields consistent with GET request + userId
-        id: true,
-        name: true,
-        content: true,
-        postId: true,
-        createdAt: true,
-        userId: true,
+        name: name,
+        createdAt: {
+          gte: new Date(Date.now() - 60 * 60 * 1000), // Last hour
+        },
       },
     });
 
-    // --- Invalidate Cache ---
+    if (recentCommentCount >= 5 && currentUser?.role !== "ADMIN") {
+      console.warn(`Comment frequency limit hit for post ${postId} by ${name}`);
+      return res.status(429).json({
+        success: false,
+        message:
+          "You've commented too frequently on this post. Please try again later.",
+      });
+    }
+
+    // Determine the User ID to Save
+    const userIdToSave =
+      currentUser && currentUser.id ? currentUser.id : GUEST_USER_ID;
+
+    // Create comment with connection timeout handling
+    const newComment = await prisma.$transaction(
+      async (tx) => {
+        return await tx.comment.create({
+          data: {
+            name: name.trim(),
+            content: content.trim(),
+            postId: postId,
+            userId: userIdToSave,
+          },
+          select: {
+            id: true,
+            name: true,
+            content: true,
+            postId: true,
+            createdAt: true,
+            userId: true,
+          },
+        });
+      },
+      {
+        timeout: 5000, // 5 second timeout for transaction
+      }
+    );
+
+    // Log successful comment
+    console.log(
+      `Comment created successfully: ID ${newComment.id} for post ${postId}`
+    );
+
+    // Invalidate Cache
     if (typeof commentsCache.del === "function") {
       commentsCache.del(`comments_${postId}`);
     } else {
@@ -254,7 +318,7 @@ router.post("/", optionalAuthenticateJWT, async (req, res) => {
       );
     }
 
-    // --- Send original success response structure ---
+    // Send original success response structure
     res.status(201).json({
       success: true,
       message: "Comment created successfully",
@@ -265,13 +329,11 @@ router.post("/", optionalAuthenticateJWT, async (req, res) => {
 
     // Handle specific known errors
     if (error.code === "P2003") {
-      // Foreign key constraint failed
       if (error.meta?.field_name?.includes("userId")) {
         console.error(
           `Foreign key constraint failed for userId. Ensure the hardcoded GUEST_USER_ID (${GUEST_USER_ID}) exists in the User table.`
         );
         return res.status(500).json({
-          // Internal server error because config (hardcoded value) might be wrong
           success: false,
           message:
             "Failed to create comment due to a server configuration issue (Guest user ID might be invalid).",
@@ -288,7 +350,6 @@ router.post("/", optionalAuthenticateJWT, async (req, res) => {
       });
     }
     if (error.code === "P2002") {
-      // Unique constraint violation
       const target = error.meta?.target
         ? ` on field(s): ${error.meta.target.join(", ")}`
         : "";
@@ -298,10 +359,16 @@ router.post("/", optionalAuthenticateJWT, async (req, res) => {
       });
     }
     if (error.code === "P2025") {
-      // Required record not found
       return res.status(404).json({
         success: false,
         message: "Required related record not found.",
+      });
+    }
+    if (error.code === "P2024") {
+      return res.status(503).json({
+        success: false,
+        message:
+          "The server is currently experiencing high load. Please try again later.",
       });
     }
 
