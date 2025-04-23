@@ -46,7 +46,7 @@ if (process.env.NODE_ENV === "production") {
   app.use("/admin", express.static(join(__dirname, "../client-admin/dist")));
 }
 
-// Mount API routes under /api prefix
+// Routes - CHANGED: Added /api prefix
 app.use("/api/auth", authRoutes);
 app.use("/api", routes);
 
@@ -57,9 +57,8 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(join(__dirname, "../client-admin/dist/index.html"));
   });
 
-  // Handle client-side routing for regular client - CATCH ALL ROUTE
-  // This must be after all other routes!
-  app.get("*", (req, res) => {
+  // Handle client-side routing for regular client - CHANGED: Exclude /api routes
+  app.get(/^(?!\/admin)(?!\/api)(?:\/.*)?$/, (req, res) => {
     res.sendFile(join(__dirname, "../client-user/dist/index.html"));
   });
 }
