@@ -14,8 +14,8 @@ function Home() {
     try {
       // Add the refresh query parameter if refresh is true
       const url = refresh
-        ? "/posts?refresh=true"
-        : "/posts";
+        ? "/api/posts?refresh=true"
+        : "/api/posts";
 
       const response = await fetch(url, {
         credentials: "include", // Include cookies with request

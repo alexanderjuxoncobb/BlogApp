@@ -15,7 +15,7 @@ function UserPosts() {
   const fetchUserPosts = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/posts/my-posts`, {
+      const response = await fetch(`/api/posts/my-posts`, {
         credentials: "include",
       });
 
@@ -44,7 +44,7 @@ function UserPosts() {
     }
 
     try {
-      const response = await fetch(`/posts/${postId}`, {
+      const response = await fetch(`/api/posts/${postId}`, {
         method: "DELETE",
         credentials: "include",
       });

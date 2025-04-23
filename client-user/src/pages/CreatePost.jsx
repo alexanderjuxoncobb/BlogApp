@@ -29,7 +29,7 @@ function CreatePost() {
 
     setLoading(true);
     try {
-      const response = await fetch("/posts", {
+      const response = await fetch("/api/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

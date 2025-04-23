@@ -53,7 +53,7 @@ function CommentForm({ postId, onCommentAdded }) {
 
     try {
       console.log("[DEBUG] Sending fetch request..."); // Log before fetch
-      const response = await fetch("/comments", {
+      const response = await fetch("/api/comments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

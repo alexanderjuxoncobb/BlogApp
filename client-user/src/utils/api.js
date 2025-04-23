@@ -3,7 +3,11 @@ const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
 // Generic request function with authentication
 export const apiRequest = async (endpoint, options = {}) => {
-  const url = `${API_URL}${endpoint}`;
+  // Add /api prefix to all endpoints
+  const apiEndpoint = endpoint.startsWith("/api")
+    ? endpoint
+    : `/api${endpoint}`;
+  const url = `${API_URL}${apiEndpoint}`;
 
   const defaultHeaders = {
     "Content-Type": "application/json",
@@ -24,7 +28,7 @@ export const apiRequest = async (endpoint, options = {}) => {
     // If response is unauthorized and we have a refresh token
     if (response.status === 401) {
       // Try to refresh the token
-      const refreshResponse = await fetch(`${API_URL}/auth/refresh-token`, {
+      const refreshResponse = await fetch(`${API_URL}/api/auth/refresh-token`, {
         method: "POST",
         credentials: "include",
       });

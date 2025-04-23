@@ -17,7 +17,7 @@ function PublishToggle({ postId, initialStatus, onToggleSuccess }) {
     setIsLoading(true); // Indicate background activity
 
     try {
-      const response = await fetch(`/posts/${postId}`, {
+      const response = await fetch(`/api/posts/${postId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

@@ -10,7 +10,7 @@ function Users() {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const response = await fetch("/users", {
+        const response = await fetch("/api/users", {
           credentials: "include",
         });
 

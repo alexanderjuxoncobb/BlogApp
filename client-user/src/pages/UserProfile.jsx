@@ -46,7 +46,7 @@ function UserProfile() {
     try {
       const userData = { name };
 
-      const response = await fetch(`/users/profile`, {
+      const response = await fetch(`/api/users/profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

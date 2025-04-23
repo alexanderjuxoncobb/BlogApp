@@ -22,7 +22,7 @@ function EditPost() {
       setIsAuthorized(false); // Reset authorization state
       setError("");
       try {
-        const response = await fetch(`/posts/${id}`, {
+        const response = await fetch(`/api/posts/${id}`, {
           credentials: "include",
         });
 
@@ -101,7 +101,7 @@ function EditPost() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`/posts/${id}`, {
+      const response = await fetch(`/api/posts/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
