@@ -15,7 +15,7 @@ export const AdminAuthProvider = ({ children }) => {
 
   const fetchAdminProfile = async () => {
     try {
-      const response = await fetch("/auth/profile", {
+      const response = await fetch("/api/auth/profile", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -50,7 +50,7 @@ export const AdminAuthProvider = ({ children }) => {
 
   const refreshToken = async () => {
     try {
-      const response = await fetch("/auth/refresh-token", {
+      const response = await fetch("/api/auth/refresh-token", {
         method: "POST",
         credentials: "include", // Important for cookies
         headers: {
@@ -72,7 +72,7 @@ export const AdminAuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch("/auth/login", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -105,7 +105,7 @@ export const AdminAuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch("/auth/logout", {
+      await fetch("/api/auth/logout", {
         method: "POST",
         credentials: "include",
       });
@@ -114,7 +114,7 @@ export const AdminAuthProvider = ({ children }) => {
     } finally {
       setCurrentAdmin(null);
       // Redirect to login page after logout
-      window.location.href = "/login";
+      window.location.href = "/admin/login";
     }
   };
 

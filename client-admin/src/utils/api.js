@@ -9,7 +9,11 @@ const API_URL = getBaseUrl();
 
 // Generic request function with authentication
 export const apiRequest = async (endpoint, options = {}) => {
-  const url = `${API_URL}${endpoint}`;
+  // Add /api prefix to all endpoints
+  const apiEndpoint = endpoint.startsWith("/api")
+    ? endpoint
+    : `/api${endpoint}`;
+  const url = `${API_URL}${apiEndpoint}`;
 
   const defaultHeaders = {
     "Content-Type": "application/json",
@@ -30,7 +34,7 @@ export const apiRequest = async (endpoint, options = {}) => {
     // If response is unauthorized and we have a refresh token
     if (response.status === 401) {
       // Try to refresh the token
-      const refreshResponse = await fetch(`${API_URL}/auth/refresh-token`, {
+      const refreshResponse = await fetch(`${API_URL}/api/auth/refresh-token`, {
         method: "POST",
         credentials: "include",
       });
@@ -121,7 +125,6 @@ export const deletePost = async (id) => {
   return response.status === 204 ? true : response.json();
 };
 
-// client-admin/src/utils/api.js
 export const togglePostPublish = async (id, isPublished) => {
   try {
     const response = await apiRequest(`/posts/${id}`, {
@@ -175,10 +178,6 @@ export const changeUserRole = async (userId, newRole) => {
 
   return response.json();
 };
-
-// client-admin/src/utils/api.js
-
-// client-admin/src/utils/api.js - Update this function
 
 export const deleteUser = async (id) => {
   try {
