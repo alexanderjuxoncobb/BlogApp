@@ -10,9 +10,8 @@ To view the restricted access Admin Dashboard you can log in using:
 
 <img width="500" alt="Screenshot 2025-04-28 at 17 00 50" src="https://github.com/user-attachments/assets/89ddeeda-8136-43af-bd04-b3df9a65d57f" />
 <img width="500" alt="Screenshot 2025-04-28 at 17 02 29" src="https://github.com/user-attachments/assets/22298029-e586-43e3-b65c-d3fcead3d9e8" />
-<img width="500" alt="Screenshot 2025-04-23 at 22 59 58" src="https://github.com/user-attachments/assets/6b1805fe-6393-4275-a94d-2c9cb00b631f" />
+<img width="500" alt="Screenshot 2025-04-23 at 22 59 58" src="https://github.com/user-attachments/assets/a2035368-606d-4a87-bd3f-c31c078089a9" />
 <img width="500" alt="Screenshot 2025-04-23 at 19 24 10" src="https://github.com/user-attachments/assets/7149cc0f-bd7f-48f4-ba48-93a041d0fd91" />
-
 
 
 ## Features
