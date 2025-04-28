@@ -1,14 +1,12 @@
 # BlogApp - Full Stack Blogging Platform
 
-BlogApp is a comprehensive, modern blogging platform built with a React frontend and Node.js backend. It features separate client applications for regular users and administrators, allowing for a complete content management experience. 
+BlogApp is a comprehensive, modern blogging platform built with a React frontend and Node.js backend. It features separate client applications for regular users and administrators, allowing for a complete content management experience.
 
+To try the app, create an account [here](https://blog-api-top-production.up.railway.app/).
 
-To try the app, create an account here: https://blog-api-top-production.up.railway.app/
-
-To view the restricted access Admin Dashboard you can log in using: 
-- username: admin@admin.com
-- password: adminpassword
-
+To view the restricted access Admin Dashboard you can log in using:  
+- username: `admin@admin.com`  
+- password: `adminpassword`
 
 
 ## Features
